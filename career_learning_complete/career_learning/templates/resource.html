@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resource Portal — Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f4ff; --card: #ffffff;
+      --primary: #8b5cf6; --blue: #4f8ef7; --gold: #c2780a;
+      --green: #10b981; --pink: #ec4899;
+      --text: #0f172a; --muted: #64748b;
+      --border: rgba(124,58,237,0.22);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Nunito',sans-serif; min-height:100vh; }
+    canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+    .orb { position:fixed; border-radius:50%; filter:blur(130px); pointer-events:none; z-index:0; }
+    .orb-1 { width:500px; height:500px; background:rgba(139,92,246,0.1); top:-100px; right:-100px; }
+    .orb-2 { width:400px; height:400px; background:rgba(79,142,247,0.08); bottom:0; left:-80px; }
+
+    /* HEADER */
+    .site-header {
+      position:relative; z-index:10;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:22px 60px; border-bottom:1px solid var(--border);
+      background:rgba(240,244,255,0.92); backdrop-filter:blur(16px);
+    }
+    .logo { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:2px; color:var(--text); text-decoration:none; }
+    .logo span { color:var(--gold); }
+    .nav-links-h { display:flex; align-items:center; gap:28px; list-style:none; }
+    .nav-links-h a { color:var(--muted); text-decoration:none; font-size:0.9rem; font-weight:600; transition:color .3s; }
+    .nav-links-h a:hover, .nav-links-h a.active { color:var(--text); }
+    .btn-nav-sm { padding:8px 20px; border-radius:50px; background:linear-gradient(135deg,var(--primary),var(--blue)); color:#fff; font-weight:700; font-size:0.85rem; text-decoration:none; }
+
+    /* HERO */
+    .res-hero {
+      position:relative; z-index:1;
+      text-align:center; padding:80px 40px 60px;
+    }
+    .hero-tag { display:inline-flex; align-items:center; gap:8px; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3); color:var(--primary); padding:6px 16px; border-radius:50px; font-size:0.78rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; }
+    .res-hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.5rem,6vw,4.5rem); letter-spacing:1px; margin-bottom:12px; }
+    .res-hero h1 span { background:linear-gradient(90deg,var(--primary),var(--blue)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .res-hero p { color:var(--muted); font-size:1rem; max-width:500px; margin:0 auto; }
+
+    /* MAIN */
+    main { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:0 24px 80px; }
+
+    /* TABS */
+    .main-tabs { display:flex; justify-content:center; gap:8px; margin-bottom:48px; flex-wrap:wrap; }
+    .main-tab { padding:10px 28px; border:1.5px solid var(--border); background:transparent; color:var(--muted); font-size:0.92rem; font-weight:700; border-radius:50px; cursor:pointer; transition:all .3s; font-family:'Nunito',sans-serif; letter-spacing:0.5px; }
+    .main-tab:hover { border-color:var(--primary); color:var(--text); }
+    .main-tab.active { background:linear-gradient(135deg,var(--primary),var(--blue)); color:#fff; border-color:transparent; box-shadow:0 0 20px rgba(139,92,246,0.35); }
+
+    .section-pane { display:none; animation:fadeIn .4s ease; }
+    .section-pane.active { display:block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* SECTION HEADER */
+    .sec-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+    .sec-head h2 { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:1px; }
+    .stream-tabs { display:flex; gap:8px; flex-wrap:wrap; }
+    .stream-tab { padding:7px 18px; border:1.5px solid var(--border); background:transparent; color:var(--muted); font-size:0.82rem; font-weight:700; border-radius:50px; cursor:pointer; transition:all .3s; font-family:'Nunito',sans-serif; }
+    .stream-tab:hover { border-color:var(--primary); color:var(--text); }
+    .stream-tab.active { background:rgba(139,92,246,0.15); border-color:var(--primary); color:var(--text); }
+    .stream-pane { display:none; animation:fadeIn .35s ease; }
+    .stream-pane.active { display:block; }
+
+    /* CARD GRID */
+    .res-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:20px; }
+    .res-card {
+      background:rgba(255,255,255,0.85); border:1px solid var(--border);
+      border-radius:18px; padding:28px 20px; text-align:center;
+      transition:all .35s; cursor:pointer; position:relative; overflow:hidden;
+      backdrop-filter:blur(12px); text-decoration:none; color:var(--text); display:block;
+    }
+    .res-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--primary),var(--blue)); opacity:0; transition:opacity .35s; }
+    .res-card:hover { transform:translateY(-8px); border-color:rgba(139,92,246,0.4); box-shadow:0 20px 40px rgba(0,0,0,0.4); }
+    .res-card:hover::before { opacity:1; }
+    .res-icon { font-size:2.8rem; margin-bottom:14px; }
+    .res-card h3 { font-size:1rem; font-weight:700; margin-bottom:8px; }
+    .res-tag { display:inline-flex; align-items:center; gap:4px; background:rgba(139,92,246,0.12); color:var(--primary); padding:3px 10px; border-radius:50px; font-size:0.72rem; font-weight:700; }
+    .res-tag.blue { background:rgba(79,142,247,0.12); color:var(--blue); }
+    .res-tag.green { background:rgba(16,185,129,0.12); color:var(--green); }
+    .res-tag.gold { background:rgba(245,158,11,0.12); color:var(--gold); }
+    .res-tag.pink { background:rgba(236,72,153,0.12); color:var(--pink); }
+    .coming-badge { position:absolute; top:12px; right:12px; background:rgba(245,158,11,0.15); color:var(--gold); font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:50px; letter-spacing:0.5px; }
+
+    @media (max-width:768px) {
+      .site-header { padding:18px 20px; }
+      .nav-links-h { display:none; }
+      .res-hero { padding:60px 20px 40px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <header class="site-header">
+    <a class="logo" href="/">Career<span>.</span>learning</a>
+    <ul class="nav-links-h">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/resource" class="active">Resources</a></li>
+      <li><a href="/collage">🎓 collages</a></li>
+      <li><a href="/exam-tracker">📅 Exam Tracker</a></li>
+      <li><a href="/cutoff">🎯 Cutoff</a></li>
+      
+      <li><a href="/logout">Logout</a></li>
+    </ul>
+    <a href="/chatbot" class="btn-nav-sm" style="background:linear-gradient(135deg,#10b981,#4f8ef7)">💬 CareerBot</a>
+  </header>
+
+  <div class="res-hero">
+    <div class="hero-tag">📚 Study Hub</div>
+    <h1>STUDENT <span>RESOURCE PORTAL</span></h1>
+    <p>Your complete study hub — from high school to higher education</p>
+  </div>
+
+  <main>
+    <div class="main-tabs">
+      <button class="main-tab active" onclick="switchMain('c10',this)">Class 10</button>
+      <button class="main-tab" onclick="switchMain('c12',this)">Class 12</button>
+      <button class="main-tab" onclick="switchMain('eng',this)">Engineering</button>
+    </div>
+
+    <!-- CLASS 10 -->
+    <div class="section-pane active" id="c10">
+      <div class="sec-head"><h2>Class 10 — NCERT Books & Notes</h2></div>
+
+      <!-- Mathematics -->
+      <div style="margin-bottom:36px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--blue);margin-bottom:14px;">📐 Mathematics</div>
+        <div class="res-grid">
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jemh1=0-15" target="_blank"><div class="res-icon">📘</div><h3>Full Textbook</h3><div class="res-tag blue">📄 NCERT PDF</div></a>
+          <a class="res-card" href="https://youtu.be/_UIDTU9iMOg?si=UKcKxSpqLr-ck5vu" target="_blank"><div class="res-icon">▶️</div><h3>Video Lectures</h3><div class="res-tag blue">▶ YouTube</div></a>
+        </div>
+      </div>
+
+      <!-- Science -->
+      <div style="margin-bottom:36px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--green);margin-bottom:14px;">🔬 Science</div>
+        <div class="res-grid">
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jesc1=0-16" target="_blank"><div class="res-icon">📗</div><h3>Full Textbook</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+        </div>
+      </div>
+
+      <!-- Social Science -->
+      <div style="margin-bottom:36px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--gold);margin-bottom:14px;">🌍 Social Science</div>
+        <div class="res-grid">
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jess2=0-8" target="_blank"><div class="res-icon">🏛️</div><h3>History</h3><div class="res-tag gold">📄 NCERT PDF</div></a>
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jess1=0-7" target="_blank"><div class="res-icon">🗺️</div><h3>Geography</h3><div class="res-tag gold">📄 NCERT PDF</div></a>
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jess3=0-8" target="_blank"><div class="res-icon">⚖️</div><h3>Political Science</h3><div class="res-tag gold">📄 NCERT PDF</div></a>
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jess4=0-5" target="_blank"><div class="res-icon">📈</div><h3>Economics</h3><div class="res-tag gold">📄 NCERT PDF</div></a>
+        </div>
+      </div>
+
+      <!-- English -->
+      <div style="margin-bottom:36px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--primary);margin-bottom:14px;">📖 English</div>
+        <div class="res-grid">
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jenc1=0-11" target="_blank"><div class="res-icon">✈️</div><h3>First Flight</h3><div class="res-tag">📄 NCERT PDF</div></a>
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jenc2=0-10" target="_blank"><div class="res-icon">👣</div><h3>Footprints Without Feet</h3><div class="res-tag">📄 NCERT PDF</div></a>
+        </div>
+      </div>
+
+      <!-- Hindi -->
+      <div style="margin-bottom:36px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--pink);margin-bottom:14px;">अ Hindi</div>
+        <div class="res-grid">
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jhkr1=0-17" target="_blank"><div class="res-icon">📕</div><h3>Kshitij</h3><div class="res-tag pink">📄 NCERT PDF</div></a>
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jhkr2=0-5" target="_blank"><div class="res-icon">📕</div><h3>Kritika</h3><div class="res-tag pink">📄 NCERT PDF</div></a>
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jhsn1=0-13" target="_blank"><div class="res-icon">📙</div><h3>Sparsh</h3><div class="res-tag pink">📄 NCERT PDF</div></a>
+          <a class="res-card" href="https://ncert.nic.in/textbook.php?jhsn2=0-6" target="_blank"><div class="res-icon">📙</div><h3>Sanchayan</h3><div class="res-tag pink">📄 NCERT PDF</div></a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CLASS 12 -->
+    <div class="section-pane" id="c12">
+      <div class="sec-head">
+        <h2>Class 12 — NCERT Books & Notes</h2>
+        <div class="stream-tabs">
+          <button class="stream-tab active" onclick="switchStream('pcm',this,'c12_tabs')">PCM</button>
+          <button class="stream-tab" onclick="switchStream('pcb',this,'c12_tabs')">PCB</button>
+          <button class="stream-tab" onclick="switchStream('com',this,'c12_tabs')">Commerce</button>
+          <button class="stream-tab" onclick="switchStream('arts',this,'c12_tabs')">Arts</button>
+        </div>
+      </div>
+      <div id="c12_tabs">
+
+        <!-- PCM -->
+        <div class="stream-pane active" id="pcm">
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--blue);margin-bottom:14px;">⚛️ Physics</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?leph1=0-15" target="_blank"><div class="res-icon">📘</div><h3>Part 1</h3><div class="res-tag blue">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?leph2=0-9" target="_blank"><div class="res-icon">📘</div><h3>Part 2</h3><div class="res-tag blue">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--green);margin-bottom:14px;">🧪 Chemistry</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lech1=0-9" target="_blank"><div class="res-icon">📗</div><h3>Part 1</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lech2=0-8" target="_blank"><div class="res-icon">📗</div><h3>Part 2</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--primary);margin-bottom:14px;">📐 Mathematics</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lemh1=0-9" target="_blank"><div class="res-icon">📙</div><h3>Part 1</h3><div class="res-tag">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lemh2=0-4" target="_blank"><div class="res-icon">📙</div><h3>Part 2</h3><div class="res-tag">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--gold);margin-bottom:14px;">💻 Computer Science</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lecs1=0-8" target="_blank"><div class="res-icon">📒</div><h3>Full Textbook</h3><div class="res-tag gold">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PCB -->
+        <div class="stream-pane" id="pcb">
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--blue);margin-bottom:14px;">⚛️ Physics</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?leph1=0-15" target="_blank"><div class="res-icon">📘</div><h3>Part 1</h3><div class="res-tag blue">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?leph2=0-9" target="_blank"><div class="res-icon">📘</div><h3>Part 2</h3><div class="res-tag blue">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--green);margin-bottom:14px;">🧪 Chemistry</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lech1=0-9" target="_blank"><div class="res-icon">📗</div><h3>Part 1</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lech2=0-8" target="_blank"><div class="res-icon">📗</div><h3>Part 2</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--pink);margin-bottom:14px;">🧬 Biology</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lebo1=0-16" target="_blank"><div class="res-icon">📕</div><h3>Full Textbook</h3><div class="res-tag pink">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Commerce -->
+        <div class="stream-pane" id="com">
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--gold);margin-bottom:14px;">📊 Accountancy</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lrac1=0-9" target="_blank"><div class="res-icon">📒</div><h3>Part 1</h3><div class="res-tag gold">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lrac2=0-5" target="_blank"><div class="res-icon">📒</div><h3>Part 2</h3><div class="res-tag gold">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--primary);margin-bottom:14px;">💼 Business Studies</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lrbs1=0-6" target="_blank"><div class="res-icon">📘</div><h3>Part 1</h3><div class="res-tag">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lrbs2=0-6" target="_blank"><div class="res-icon">📘</div><h3>Part 2</h3><div class="res-tag">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--green);margin-bottom:14px;">📈 Economics</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?leec1=0-9" target="_blank"><div class="res-icon">📗</div><h3>Micro Economics</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?leec2=0-7" target="_blank"><div class="res-icon">📗</div><h3>Macro Economics</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Arts -->
+        <div class="stream-pane" id="arts">
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--gold);margin-bottom:14px;">🏛️ History</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lhis1=0-15" target="_blank"><div class="res-icon">📕</div><h3>Full Textbook</h3><div class="res-tag gold">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--green);margin-bottom:14px;">🗺️ Geography</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?legy1=0-12" target="_blank"><div class="res-icon">📗</div><h3>Fundamentals</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?legy2=0-7" target="_blank"><div class="res-icon">📗</div><h3>India — People & Economy</h3><div class="res-tag green">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--blue);margin-bottom:14px;">⚖️ Political Science</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lps1=0-9" target="_blank"><div class="res-icon">📘</div><h3>Contemporary World Politics</h3><div class="res-tag blue">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lps2=0-9" target="_blank"><div class="res-icon">📘</div><h3>Politics in India</h3><div class="res-tag blue">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--primary);margin-bottom:14px;">🧠 Sociology</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lsoc1=0-6" target="_blank"><div class="res-icon">📙</div><h3>Indian Society</h3><div class="res-tag">📄 NCERT PDF</div></a>
+              <a class="res-card" href="https://ncert.nic.in/textbook.php?lsoc2=0-8" target="_blank"><div class="res-icon">📙</div><h3>Social Change in India</h3><div class="res-tag">📄 NCERT PDF</div></a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ENGINEERING -->
+    <div class="section-pane" id="eng">
+      <div class="sec-head">
+        <h2>Engineering Branches</h2>
+        <div class="stream-tabs">
+          <button class="stream-tab active" onclick="switchStream('cse',this,'eng_tabs')">Computer Science</button>
+          <button class="stream-tab" onclick="switchStream('core',this,'eng_tabs')">Core Branches</button>
+        </div>
+      </div>
+      <div id="eng_tabs">
+        <!-- CSE -->
+        <div class="stream-pane active" id="cse">
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--blue);margin-bottom:14px;">💻 Programming Languages</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://www.w3schools.com/java/" target="_blank"><div class="res-icon">☕</div><h3>Java</h3><div class="res-tag blue">🔗 W3Schools</div></a>
+              <a class="res-card" href="https://www.w3schools.com/python/default.asp" target="_blank"><div class="res-icon">🐍</div><h3>Python</h3><div class="res-tag green">🔗 W3Schools</div></a>
+              <a class="res-card" href="https://www.w3schools.com/cpp/default.asp" target="_blank"><div class="res-icon">⌨️</div><h3>C++</h3><div class="res-tag">🔗 W3Schools</div></a>
+              <a class="res-card" href="https://www.w3schools.com/c/index.php" target="_blank"><div class="res-icon">🔵</div><h3>C Language</h3><div class="res-tag blue">🔗 W3Schools</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--green);margin-bottom:14px;">⚙️ Core CS Subjects</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://www.w3schools.com/dsa/index.php" target="_blank"><div class="res-icon">🌳</div><h3>Data Structures & Algorithms</h3><div class="res-tag green">🔗 W3Schools</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/operating-systems/" target="_blank"><div class="res-icon">🖥️</div><h3>Operating Systems</h3><div class="res-tag">🔗 GeeksForGeeks</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/dbms/" target="_blank"><div class="res-icon">🗄️</div><h3>DBMS</h3><div class="res-tag gold">🔗 GeeksForGeeks</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/computer-network-tutorials/" target="_blank"><div class="res-icon">🌐</div><h3>Computer Networks</h3><div class="res-tag blue">🔗 GeeksForGeeks</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/computer-organization-and-architecture-tutorials/" target="_blank"><div class="res-icon">🔧</div><h3>Computer Architecture</h3><div class="res-tag">🔗 GeeksForGeeks</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/software-engineering/" target="_blank"><div class="res-icon">📋</div><h3>Software Engineering</h3><div class="res-tag pink">🔗 GeeksForGeeks</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--gold);margin-bottom:14px;">🤖 AI / ML / Data Science</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://www.w3schools.com/datascience/default.asp" target="_blank"><div class="res-icon">📊</div><h3>Data Science</h3><div class="res-tag gold">🔗 W3Schools</div></a>
+              <a class="res-card" href="https://youtu.be/ZftI2fEz0Fw?si=PeArylSLFrncbbTS" target="_blank"><div class="res-icon">🤖</div><h3>Machine Learning</h3><div class="res-tag blue">▶ YouTube</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/artificial-intelligence/" target="_blank"><div class="res-icon">🧠</div><h3>Artificial Intelligence</h3><div class="res-tag green">🔗 GeeksForGeeks</div></a>
+              <a class="res-card" href="https://www.w3schools.com/sql/default.asp" target="_blank"><div class="res-icon">📂</div><h3>SQL</h3><div class="res-tag">🔗 W3Schools</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--primary);margin-bottom:14px;">🌐 Web Development</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://www.w3schools.com/html/default.asp" target="_blank"><div class="res-icon">🟠</div><h3>HTML</h3><div class="res-tag">🔗 W3Schools</div></a>
+              <a class="res-card" href="https://www.w3schools.com/css/default.asp" target="_blank"><div class="res-icon">🔵</div><h3>CSS</h3><div class="res-tag blue">🔗 W3Schools</div></a>
+              <a class="res-card" href="https://www.w3schools.com/js/default.asp" target="_blank"><div class="res-icon">🟡</div><h3>JavaScript</h3><div class="res-tag gold">🔗 W3Schools</div></a>
+              <a class="res-card" href="https://www.w3schools.com/react/default.asp" target="_blank"><div class="res-icon">⚛️</div><h3>React</h3><div class="res-tag blue">🔗 W3Schools</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--pink);margin-bottom:14px;">🔐 Security & Others</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://www.geeksforgeeks.org/cryptography-and-network-security/" target="_blank"><div class="res-icon">🔐</div><h3>Cryptography</h3><div class="res-tag pink">🔗 GeeksForGeeks</div></a>
+              <a class="res-card" href="https://www.tutorialspoint.com/management_information_system/index.htm" target="_blank"><div class="res-icon">📈</div><h3>MIS</h3><div class="res-tag">🔗 TutorialsPoint</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/compiler-design-tutorials/" target="_blank"><div class="res-icon">🛠️</div><h3>Compiler Design</h3><div class="res-tag green">🔗 GeeksForGeeks</div></a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Core Branches -->
+        <div class="stream-pane" id="core">
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--gold);margin-bottom:14px;">🏗️ Civil Engineering</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://www.tutorialspoint.com/engineering_mathematics/index.htm" target="_blank"><div class="res-icon">📐</div><h3>Engineering Mathematics</h3><div class="res-tag gold">🔗 TutorialsPoint</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/engineering-mechanics/" target="_blank"><div class="res-icon">🏗️</div><h3>Engineering Mechanics</h3><div class="res-tag gold">🔗 GeeksForGeeks</div></a>
+              <a class="res-card" href="https://www.tutorialspoint.com/strength_of_materials/index.htm" target="_blank"><div class="res-icon">🧱</div><h3>Strength of Materials</h3><div class="res-tag">🔗 TutorialsPoint</div></a>
+              <a class="res-card" href="https://www.tutorialspoint.com/fluid_mechanics/index.htm" target="_blank"><div class="res-icon">💧</div><h3>Fluid Mechanics</h3><div class="res-tag blue">🔗 TutorialsPoint</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--muted);margin-bottom:14px;">⚙️ Mechanical Engineering</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://www.tutorialspoint.com/engineering_mathematics/index.htm" target="_blank"><div class="res-icon">📐</div><h3>Engineering Mathematics</h3><div class="res-tag gold">🔗 TutorialsPoint</div></a>
+              <a class="res-card" href="https://www.tutorialspoint.com/thermodynamics/index.htm" target="_blank"><div class="res-icon">🔥</div><h3>Thermodynamics</h3><div class="res-tag">🔗 TutorialsPoint</div></a>
+              <a class="res-card" href="https://www.tutorialspoint.com/fluid_mechanics/index.htm" target="_blank"><div class="res-icon">💧</div><h3>Fluid Mechanics</h3><div class="res-tag blue">🔗 TutorialsPoint</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/engineering-mechanics/" target="_blank"><div class="res-icon">⚙️</div><h3>Engineering Mechanics</h3><div class="res-tag green">🔗 GeeksForGeeks</div></a>
+            </div>
+          </div>
+
+          <div style="margin-bottom:36px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--blue);margin-bottom:14px;">⚡ Electrical Engineering</div>
+            <div class="res-grid">
+              <a class="res-card" href="https://www.tutorialspoint.com/basic_electronics/index.htm" target="_blank"><div class="res-icon">🔌</div><h3>Basic Electronics</h3><div class="res-tag blue">🔗 TutorialsPoint</div></a>
+              <a class="res-card" href="https://www.tutorialspoint.com/electric_circuit_analysis/index.htm" target="_blank"><div class="res-icon">⚡</div><h3>Circuit Analysis</h3><div class="res-tag blue">🔗 TutorialsPoint</div></a>
+              <a class="res-card" href="https://www.geeksforgeeks.org/electromagnetic-theory/" target="_blank"><div class="res-icon">🧲</div><h3>Electromagnetic Theory</h3><div class="res-tag green">🔗 GeeksForGeeks</div></a>
+              <a class="res-card" href="https://www.tutorialspoint.com/digital_circuits/index.htm" target="_blank"><div class="res-icon">💡</div><h3>Digital Circuits</h3><div class="res-tag gold">🔗 TutorialsPoint</div></a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function switchMain(id, btn) {
+      document.querySelectorAll('.section-pane').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('.main-tab').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+    }
+    function switchStream(id, btn, parentId) {
+      const parent=document.getElementById(parentId);
+      parent.querySelectorAll('.stream-pane').forEach(p=>p.classList.remove('active'));
+      const tabs=btn.closest('.stream-tabs');
+      tabs.querySelectorAll('.stream-tab').forEach(b=>b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+    }
+    const canvas=document.getElementById('stars'),ctx=canvas.getContext('2d');
+    function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+    resize();window.addEventListener('resize',resize);
+    const stars=Array.from({length:180},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.3,a:Math.random(),s:0.0002+Math.random()*0.0005}));
+    (function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{s.a+=s.s;if(s.a>1)s.a=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(80,120,210,${s.a * 0.5})`;ctx.fill();});requestAnimationFrame(draw);})();
+  </script>
+</body>
+</html>

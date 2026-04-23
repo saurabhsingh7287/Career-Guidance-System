@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #f0f4ff; --bg1: #e4ebff; --glass: rgba(255,255,255,0.9);
+      --primary: #4f8ef7; --violet: #8b5cf6; --gold: #c2780a;
+      --text: #0f172a; --muted: #64748b; --border: rgba(59,125,232,0.22);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; min-height: 100vh; display: flex; overflow: hidden; }
+    canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+    .orb { position: fixed; border-radius: 50%; filter: blur(130px); pointer-events: none; z-index: 0; }
+    .orb-1 { width: 450px; height: 450px; background: rgba(139,92,246,0.1); top: -80px; right: -80px; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(79,142,247,0.08); bottom: 50px; left: 200px; }
+
+    /* LEFT PANEL */
+    .left-panel {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      padding: 80px; position: relative; z-index: 1;
+    }
+    .panel-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 60px; color: var(--text); text-decoration: none; }
+    .panel-logo span { color: var(--gold); }
+    .panel-headline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 4vw, 4.5rem); line-height: 0.95; letter-spacing: 1px; margin-bottom: 20px; }
+    .panel-headline .grad { background: linear-gradient(90deg, var(--violet), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .panel-sub { color: var(--muted); font-size: 1rem; line-height: 1.7; max-width: 380px; margin-bottom: 40px; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step { display: flex; gap: 16px; align-items: flex-start; padding: 16px 0; border-left: 2px solid var(--border); padding-left: 24px; position: relative; }
+    .step::before {
+      content: ''; position: absolute; left: -7px; top: 20px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--violet));
+    }
+    .step-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--primary); line-height: 1; min-width: 28px; }
+    .step-text h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+    .step-text p { color: var(--muted); font-size: 0.82rem; }
+
+    /* RIGHT PANEL */
+    .right-panel {
+      width: 500px; display: flex;
+      /* FIX: flex-start so flash messages push content down and scroll works */
+      align-items: flex-start; justify-content: center;
+      padding: 32px; position: relative; z-index: 1;
+      border-left: 1px solid var(--border);
+      background: rgba(240,244,255,0.8); backdrop-filter: blur(20px);
+      overflow-y: auto; height: 100vh;
+    }
+    /* FIX: Center form-card vertically only when no flash messages / enough room */
+    .form-card { margin: auto 0; }
+    .form-card { width: 100%; max-width: 420px; animation: slideIn 0.6s ease both; padding: 20px 0; }
+    @keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+    .form-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 1px; margin-bottom: 6px; }
+    .form-subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 32px; }
+
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+    .input-wrap { position: relative; }
+
+    /* FIX: Icon ko properly position karo — absolute, left side */
+    .input-wrap i {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); font-size: 0.88rem; pointer-events: none;
+      transition: color .3s; z-index: 1;
+    }
+    .input-wrap input {
+      width: 100%; padding: 13px 14px 13px 40px;
+      background: rgba(0,0,0,0.05); border: 1px solid var(--border);
+      border-radius: 12px; font-size: 0.93rem; color: var(--text);
+      font-family: 'Nunito', sans-serif; transition: all .3s;
+    }
+    .input-wrap input::placeholder { color: rgba(107,122,157,0.55); }
+    .input-wrap input:focus { outline: none; border-color: var(--violet); background: rgba(139,92,246,0.05); box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
+    .input-wrap:focus-within i { color: var(--violet); }
+
+    /* FIX: Input error state */
+    .input-wrap input.input-error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
+
+    /* Password strength */
+    .strength-bar { display: flex; gap: 4px; margin-top: 8px; }
+    .strength-seg { height: 3px; flex: 1; border-radius: 4px; background: var(--border); transition: background .3s; }
+
+    /* FIX: Class selector error state */
+    .class-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .class-selector.error .class-opt { border-color: rgba(239,68,68,0.5); }
+    .class-opt { padding: 12px 10px; border: 1.5px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center; transition: all .3s; font-size: 0.88rem; font-weight: 700; color: var(--muted); background: transparent; user-select: none; }
+    .class-opt.selected, .class-opt:hover { border-color: var(--violet); color: var(--text); background: rgba(139,92,246,0.1); }
+
+    .btn-submit {
+      width: 100%; padding: 15px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, var(--violet), #ec4899);
+      color: #fff; font-size: 1rem; font-weight: 800; cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      box-shadow: 0 4px 24px rgba(139,92,246,0.4);
+      transition: all .3s; margin-top: 8px;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(139,92,246,0.55); }
+    .btn-submit:active { transform: translateY(0); }
+    .login-prompt { text-align: center; font-size: 0.9rem; color: var(--muted); margin-top: 18px; }
+    .login-prompt a { color: var(--gold); font-weight: 700; text-decoration: none; }
+    .login-prompt a:hover { text-decoration: underline; }
+
+    .terms { font-size: 0.8rem; color: var(--muted); text-align: center; margin-top: 12px; line-height: 1.5; }
+    .terms a { color: var(--primary); text-decoration: none; }
+
+    @media (max-width: 768px) {
+      .left-panel { display: none; }
+      .right-panel { width: 100%; border: none; }
+      .input-row { grid-template-columns: 1fr; }
+    }
+
+    .flash-msg { padding:10px 16px; border-radius:8px; font-size:0.88rem; font-weight:700; margin-bottom:16px; }
+    .flash-msg.error { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); color:#f87171; }
+    .flash-msg.success { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); color:#34d399; }
+
+    /* FIX: Inline validation error message */
+    .field-error { font-size: 0.78rem; color: #f87171; margin-top: 5px; display: none; }
+    .field-error.show { display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="left-panel">
+    <a class="panel-logo" href="/">Career<span>.</span>learning</a>
+    <h1 class="panel-headline">START YOUR<br><span class="grad">JOURNEY.</span></h1>
+    <p class="panel-sub">Create your free account and get a personalized career assessment in minutes.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><div class="step-text"><h4>Create Your Account</h4><p>Quick sign-up, no credit card required</p></div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-text"><h4>Take the Assessment</h4><p>5-minute quiz about marks &amp; interests</p></div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-text"><h4>Get Your Results</h4><p>AI-powered stream &amp; career prediction</p></div></div>
+      <div class="step"><div class="step-num">04</div><div class="step-text"><h4>Access Resources</h4><p>Curated materials for your path</p></div></div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="form-card">
+
+      <!-- Flask flash messages (Jinja2 template syntax) -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash-msg {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      <a href="/" style="display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:0.85rem;font-weight:700;text-decoration:none;margin-bottom:28px;" onmouseover="this.style.color='var(--violet)'" onmouseout="this.style.color='var(--muted)'">
+        ← Back to Home
+      </a>
+
+      <h2 class="form-title">CREATE ACCOUNT</h2>
+      <p class="form-subtitle">Join thousands of students already guided</p>
+
+  
+      <form id="registerForm" action="/register" method="POST" novalidate>
+
+        <div class="input-row">
+          <!-- FIX: Icon PEHLE, input baad mein. for/id linked -->
+          <div class="input-group">
+            <label for="firstname">First Name</label>
+            <div class="input-wrap">
+              <i class="fa-regular fa-user"></i>
+              <input type="text" id="firstname" name="firstname" placeholder="First name" required>
+            </div>
+            <span class="field-error" id="err-firstname">First name required</span>
+          </div>
+          <div class="input-group">
+            <label for="lastname">Last Name</label>
+            <div class="input-wrap">
+              <i class="fa-regular fa-user"></i>
+              <input type="text" id="lastname" name="lastname" placeholder="Last name" required>
+            </div>
+            <span class="field-error" id="err-lastname">Last name required</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrap">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" id="email" name="email" placeholder="your@email.com" required>
+          </div>
+          <span class="field-error" id="err-email">Valid email required</span>
+        </div>
+
+        <div class="input-group">
+          <label for="username">Username</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-at"></i>
+            <input type="text" id="username" name="username" placeholder="Choose a username" required>
+          </div>
+          <span class="field-error" id="err-username">Username required</span>
+        </div>
+
+        <!-- FIX: Class selection validation added -->
+        <div class="input-group">
+          <label>Your Class</label>
+          <div class="class-selector" id="classSelector">
+            <div class="class-opt" onclick="selectClass(this,'10')">Class 10</div>
+            <div class="class-opt" onclick="selectClass(this,'12')">Class 12</div>
+          </div>
+          <input type="hidden" name="student_class" id="classInput">
+          <span class="field-error" id="err-class">Please select your class</span>
+        </div>
+
+        <div class="input-group">
+          <label for="pwdInput">Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="pwdInput" name="password" placeholder="Create a strong password" required oninput="updateStrength(this.value)">
+          </div>
+          <div class="strength-bar">
+            <div class="strength-seg" id="s1"></div>
+            <div class="strength-seg" id="s2"></div>
+            <div class="strength-seg" id="s3"></div>
+            <div class="strength-seg" id="s4"></div>
+          </div>
+          <span class="field-error" id="err-password">Password must be at least 6 characters</span>
+        </div>
+
+        <!-- FIX: Confirm password match validation -->
+        <div class="input-group">
+          <label for="confirm_password">Confirm Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-key"></i>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="Repeat your password" required>
+          </div>
+          <span class="field-error" id="err-confirm">Passwords do not match</span>
+        </div>
+
+        <button type="submit" class="btn-submit">Create My Account →</button>
+      </form>
+
+      <div class="login-prompt">Already have an account? <a href="/login">Sign in here</a></div>
+      <p class="terms">By registering, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></p>
+    </div>
+  </div>
+
+  <script>
+    /* ── Class selector ── */
+    function selectClass(el, val) {
+      document.querySelectorAll('.class-opt').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('classInput').value = val;
+      // FIX: Error saaf karo jab class select ho
+      document.getElementById('classSelector').classList.remove('error');
+      document.getElementById('err-class').classList.remove('show');
+    }
+
+    /* ── Password strength ── */
+    function updateStrength(v) {
+      const segs   = ['s1','s2','s3','s4'];
+      const colors = ['#ef4444','#f59e0b','#10b981','#4f8ef7'];
+      let score = 0;
+      if (v.length >= 6)  score++;
+      if (v.length >= 10) score++;
+      if (/[A-Z]/.test(v) && /[0-9]/.test(v)) score++;
+      if (/[^A-Za-z0-9]/.test(v)) score++;
+      segs.forEach((s, i) => {
+        document.getElementById(s).style.background = i < score ? colors[score - 1] : 'var(--border)';
+      });
+    }
+
+    /* ── FIX: Form validation before submit ── */
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      let valid = true;
+
+      const fields = [
+        { id: 'firstname',        err: 'err-firstname', check: v => v.trim() !== '' },
+        { id: 'lastname',         err: 'err-lastname',  check: v => v.trim() !== '' },
+        { id: 'email',            err: 'err-email',     check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+        { id: 'username',         err: 'err-username',  check: v => v.trim() !== '' },
+        { id: 'pwdInput',         err: 'err-password',  check: v => v.length >= 6 },
+      ];
+
+      fields.forEach(({ id, err, check }) => {
+        const input = document.getElementById(id);
+        const errEl = document.getElementById(err);
+        if (!check(input.value)) {
+          input.classList.add('input-error');
+          errEl.classList.add('show');
+          valid = false;
+        } else {
+          input.classList.remove('input-error');
+          errEl.classList.remove('show');
+        }
+      });
+
+      // FIX: Class selection check
+      if (!document.getElementById('classInput').value) {
+        document.getElementById('classSelector').classList.add('error');
+        document.getElementById('err-class').classList.add('show');
+        valid = false;
+      }
+
+      // FIX: Password match check
+      const pwd     = document.getElementById('pwdInput').value;
+      const confirm = document.getElementById('confirm_password').value;
+      const confErr = document.getElementById('err-confirm');
+      const confInp = document.getElementById('confirm_password');
+      if (confirm !== pwd || confirm === '') {
+        confInp.classList.add('input-error');
+        confErr.classList.add('show');
+        valid = false;
+      } else {
+        confInp.classList.remove('input-error');
+        confErr.classList.remove('show');
+      }
+
+      if (!valid) e.preventDefault();
+    });
+
+    // Live clear error on input
+    document.querySelectorAll('.input-wrap input').forEach(input => {
+      input.addEventListener('input', function() {
+        this.classList.remove('input-error');
+        const errId = 'err-' + (this.id === 'pwdInput' ? 'password' : this.id === 'confirm_password' ? 'confirm' : this.id);
+        const errEl = document.getElementById(errId);
+        if (errEl) errEl.classList.remove('show');
+      });
+    });
+
+    /* ── FIX: Stars canvas — smooth fade oscillation + resize fix ── */
+    const canvas = document.getElementById('stars');
+    const ctx    = canvas.getContext('2d');
+
+    let W = 0, H = 0;
+    let stars = [];
+
+    function makeStars(w, h) {
+      return Array.from({ length: 150 }, () => ({
+        x:     Math.random() * w,
+        y:     Math.random() * h,
+        r:     Math.random() * 1.2 + 0.3,
+        phase: Math.random() * Math.PI * 2,        // FIX: random start phase
+        speed: 0.004 + Math.random() * 0.006        // FIX: smooth oscillation speed
+      }));
+    }
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      // FIX: Stars ko naye dimensions ke saath reinitialize karo
+      stars = makeStars(W, H);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    (function draw() {
+      ctx.clearRect(0, 0, W, H);
+      stars.forEach(s => {
+        // FIX: sin wave se smooth fade in/out (0 se 1 oscillate, no jump)
+        s.phase += s.speed;
+        const alpha = (Math.sin(s.phase) + 1) / 2;   // always 0–1, smooth
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(80,120,210,${alpha * 0.5})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    })();
+  </script>
+</body>
+</html>

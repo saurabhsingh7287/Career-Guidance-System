@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class 10 Stream Predictor — Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f4ff; --bg1: #e4ebff; --card: #ffffff;
+      --primary: #4f8ef7; --violet: #8b5cf6; --gold: #c2780a;
+      --green: #10b981; --text: #0f172a; --muted: #64748b; --border: rgba(59,125,232,0.22);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; min-height: 100vh; padding: 80px 20px; }
+    canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+    .orb { position:fixed; border-radius:50%; filter:blur(130px); pointer-events:none; z-index:0; }
+    .orb-1 { width:400px; height:400px; background:rgba(79,142,247,0.1); top:-100px; right:-100px; }
+    .orb-2 { width:350px; height:350px; background:rgba(16,185,129,0.08); bottom:0; left:-100px; }
+
+    /* BACK LINK */
+    .back { position:fixed; top:24px; left:32px; z-index:10; color:var(--muted); text-decoration:none; font-size:0.88rem; font-weight:700; display:flex; align-items:center; gap:8px; transition:color .3s; }
+    .back:hover { color:var(--primary); }
+    .page-logo { position:fixed; top:20px; right:32px; z-index:10; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; color:var(--text); text-decoration:none; letter-spacing:2px; }
+    .page-logo span { color:var(--gold); }
+    .nav-links-top { position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10; display:flex; gap:20px; }
+    .nav-links-top a { color:var(--muted); text-decoration:none; font-size:0.82rem; font-weight:700; transition:color .3s; }
+    .nav-links-top a:hover { color:var(--text); }
+
+    .page-wrap { position:relative; z-index:1; max-width:640px; margin:0 auto; }
+
+    /* HEADER */
+    .page-header { text-align:center; margin-bottom:48px; }
+    .page-tag { display:inline-flex; align-items:center; gap:8px; background:rgba(79,142,247,0.1); border:1px solid rgba(79,142,247,0.3); color:var(--primary); padding:6px 16px; border-radius:50px; font-size:0.78rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; }
+    .page-header h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.2rem,5vw,3.5rem); letter-spacing:1px; margin-bottom:10px; }
+    .page-header h1 span { background:linear-gradient(90deg,var(--primary),var(--green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .page-header p { color:var(--muted); font-size:0.95rem; }
+
+    /* PROGRESS */
+    .progress-bar { display:flex; justify-content:center; gap:8px; margin-bottom:40px; }
+    .prog-step { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .prog-dot { width:36px; height:36px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; color:var(--muted); transition:all .4s; }
+    .prog-dot.active { border-color:var(--primary); color:var(--primary); background:rgba(79,142,247,0.1); box-shadow:0 0 16px rgba(79,142,247,0.3); }
+    .prog-dot.done { border-color:var(--green); background:var(--green); color:#fff; }
+    .prog-label { font-size:0.7rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+    .prog-line { width:60px; height:2px; background:var(--border); margin-top:18px; transition:background .4s; align-self:flex-start; }
+    .prog-line.done { background:var(--green); }
+
+    /* FORM STEPS */
+    .form-step { display:none; animation:fadeStep .4s ease; }
+    .form-step.active { display:block; }
+    @keyframes fadeStep { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+    /* CARD */
+    .form-card { background:rgba(255,255,255,0.90); border:1px solid var(--border); border-radius:20px; padding:36px; backdrop-filter:blur(16px); margin-bottom:24px; }
+    .card-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:1px; margin-bottom:24px; display:flex; align-items:center; gap:10px; }
+    .card-title .tag { font-size:0.72rem; font-family:'Nunito',sans-serif; background:rgba(79,142,247,0.15); color:var(--primary); padding:3px 10px; border-radius:50px; letter-spacing:1px; text-transform:uppercase; }
+
+    /* MARKS GRID */
+    .marks-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .marks-item label { display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:10px; }
+    .marks-item label .val { color:var(--primary); font-size:1rem; }
+    .marks-slider { width:100%; -webkit-appearance:none; height:4px; border-radius:4px; background:var(--border); outline:none; transition:all .3s; cursor:pointer; }
+    .marks-slider::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--violet)); cursor:pointer; box-shadow:0 0 8px rgba(79,142,247,0.5); transition:all .3s; }
+    .marks-slider::-webkit-slider-thumb:hover { transform:scale(1.3); }
+    .marks-number { width:100%; padding:12px 16px; background:rgba(0,0,0,0.05); border:1px solid var(--border); border-radius:10px; font-size:1.1rem; font-weight:700; color:var(--primary); text-align:center; margin-top:8px; font-family:'Nunito',sans-serif; }
+
+    /* INTEREST CARDS */
+    .interest-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .interest-opt { border:1.5px solid var(--border); border-radius:14px; padding:20px 12px; cursor:pointer; text-align:center; transition:all .3s; }
+    .interest-opt:hover { border-color:rgba(79,142,247,0.4); background:rgba(79,142,247,0.05); }
+    .interest-opt.selected { border-color:var(--primary); background:rgba(79,142,247,0.12); box-shadow:0 0 20px rgba(79,142,247,0.2); }
+    .interest-icon { font-size:2rem; margin-bottom:8px; }
+    .interest-name { font-size:0.82rem; font-weight:700; }
+    .interest-desc { font-size:0.72rem; color:var(--muted); margin-top:4px; }
+
+    /* QUIZ */
+    .quiz-q { margin-bottom:28px; }
+    .quiz-q .q-text { font-weight:700; margin-bottom:14px; font-size:0.95rem; line-height:1.5; }
+    .quiz-opts { display:flex; flex-direction:column; gap:8px; }
+    .quiz-opt { display:flex; align-items:center; gap:12px; padding:12px 16px; border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all .3s; font-size:0.9rem; font-weight:600; }
+    .quiz-opt:hover { border-color:rgba(79,142,247,0.4); background:rgba(79,142,247,0.05); }
+    .quiz-opt.selected { border-color:var(--primary); background:rgba(79,142,247,0.12); }
+    .quiz-opt input { accent-color:var(--primary); }
+
+    /* BUTTONS */
+    .btn-row { display:flex; gap:12px; margin-top:16px; }
+    .btn-back-step { flex:1; padding:14px; border:1.5px solid var(--border); border-radius:12px; background:transparent; color:var(--muted); font-size:0.95rem; font-weight:700; cursor:pointer; font-family:'Nunito',sans-serif; transition:all .3s; }
+    .btn-back-step:hover { border-color:var(--muted); color:var(--text); }
+    .btn-next { flex:2; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,var(--primary),var(--violet)); color:#fff; font-size:1rem; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; box-shadow:0 4px 20px rgba(79,142,247,0.3); transition:all .3s; }
+    .btn-next:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(79,142,247,0.5); }
+    .btn-predict { flex:2; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,var(--green),#0ea5e9); color:#fff; font-size:1rem; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; box-shadow:0 4px 20px rgba(16,185,129,0.4); transition:all .3s; letter-spacing:0.5px; }
+    .btn-predict:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(16,185,129,0.55); }
+
+    .error-msg { color:#ef4444; font-size:0.82rem; margin-top:6px; display:none; }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <a class="back" href="/dashboard">← Dashboard</a>
+  <div class="nav-links-top">
+    <a href="/resource">Resources</a>
+    <a href="/collage">🎓 collages</a>
+    <a href="/exam-tracker">📅 Exam Tracker</a>
+    <a href="/cutoff">🎯 Cutoff</a>
+    <a href="/chatbot">💬 CareerBot</a>
+    <a href="/logout">Logout</a>
+  </div>
+  <a class="page-logo" href="/">Career<span>.</span>learning</a>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <div class="page-tag">✦ AI Assessment</div>
+      <h1>CLASS 10<br><span>STREAM PREDICTOR</span></h1>
+      <p>Answer 3 quick sections — we'll find your perfect stream</p>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-bar" id="progressBar">
+      <div class="prog-step"><div class="prog-dot active" id="dot1">1</div><div class="prog-label">Marks</div></div>
+      <div class="prog-line" id="line1"></div>
+      <div class="prog-step"><div class="prog-dot" id="dot2">2</div><div class="prog-label">Interest</div></div>
+      <div class="prog-line" id="line2"></div>
+      <div class="prog-step"><div class="prog-dot" id="dot3">3</div><div class="prog-label">Quiz</div></div>
+    </div>
+
+    <!-- STEP 1: Marks -->
+    <div class="form-step active" id="step1">
+      <div class="form-card">
+        <div class="card-title">Your Marks <span class="tag">Out of 100</span></div>
+        <div class="marks-grid">
+          <div class="marks-item">
+            <label>Mathematics <span class="val" id="math_val">75</span></label>
+            <input type="range" class="marks-slider" id="math_slider" min="0" max="100" value="75" oninput="syncMark('math',this.value)">
+            <input class="marks-number" type="number" id="math_num" min="0" max="100" value="75" oninput="syncMark('math',this.value)">
+          </div>
+          <div class="marks-item">
+            <label>Science <span class="val" id="science_val">75</span></label>
+            <input type="range" class="marks-slider" id="science_slider" min="0" max="100" value="75" oninput="syncMark('science',this.value)">
+            <input class="marks-number" type="number" id="science_num" min="0" max="100" value="75" oninput="syncMark('science',this.value)">
+          </div>
+          <div class="marks-item">
+            <label>Social Studies <span class="val" id="sst_val">75</span></label>
+            <input type="range" class="marks-slider" id="sst_slider" min="0" max="100" value="75" oninput="syncMark('sst',this.value)">
+            <input class="marks-number" type="number" id="sst_num" min="0" max="100" value="75" oninput="syncMark('sst',this.value)">
+          </div>
+          <div class="marks-item">
+            <label>English <span class="val" id="english_val">75</span></label>
+            <input type="range" class="marks-slider" id="english_slider" min="0" max="100" value="75" oninput="syncMark('english',this.value)">
+            <input class="marks-number" type="number" id="english_num" min="0" max="100" value="75" oninput="syncMark('english',this.value)">
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-next" onclick="goStep(2)">Next: Pick Your Interest →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Interest -->
+    <div class="form-step" id="step2">
+      <div class="form-card">
+        <div class="card-title">Primary Interest <span class="tag">Choose One</span></div>
+        <div class="interest-grid">
+          <div class="interest-opt" onclick="selectInterest(this,'technical')">
+            <div class="interest-icon">⚙️</div>
+            <div class="interest-name">Tech & Logic</div>
+            <div class="interest-desc">Coding, circuits, problem solving</div>
+          </div>
+          <div class="interest-opt" onclick="selectInterest(this,'business')">
+            <div class="interest-icon">📊</div>
+            <div class="interest-name">Business & Finance</div>
+            <div class="interest-desc">Markets, economics, management</div>
+          </div>
+          <div class="interest-opt" onclick="selectInterest(this,'creative')">
+            <div class="interest-icon">🎨</div>
+            <div class="interest-name">Arts & Creativity</div>
+            <div class="interest-desc">Literature, design, expression</div>
+          </div>
+        </div>
+        <div class="error-msg" id="interestErr">Please select an interest to continue.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back-step" onclick="goStep(1)">← Back</button>
+        <button class="btn-next" onclick="goStep(3)">Next: Logic Quiz →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Quiz -->
+    <div class="form-step" id="step3">
+      <div class="form-card">
+        <div class="card-title">Mini Logic Quiz <span class="tag">5 Questions</span></div>
+
+        <div id="quizContainer"></div>
+        <div class="error-msg" id="quizErr">Please answer all 5 questions.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back-step" onclick="goStep(2)">← Back</button>
+        <button class="btn-predict" onclick="submitForm()">🔮 Predict My Stream</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedInterest = '';
+    const marks = { math:75, science:75, sst:75, english:75 };
+
+    function syncMark(subject, value) {
+      value = Math.max(0, Math.min(100, parseInt(value)||0));
+      marks[subject] = value;
+      document.getElementById(subject+'_val').textContent = value;
+      document.getElementById(subject+'_slider').value = value;
+      document.getElementById(subject+'_num').value = value;
+    }
+
+    function selectInterest(el, val) {
+      document.querySelectorAll('.interest-opt').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected'); selectedInterest = val;
+      document.getElementById('interestErr').style.display = 'none';
+    }
+
+    function goStep(n) {
+      if(n === 3 && !selectedInterest) {
+        document.getElementById('interestErr').style.display = 'block'; return;
+      }
+      document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step'+n).classList.add('active');
+      updateProgress(n);
+    }
+
+    function updateProgress(current) {
+      for(let i=1;i<=3;i++) {
+        const dot = document.getElementById('dot'+i);
+        dot.className = 'prog-dot';
+        if(i < current) { dot.classList.add('done'); dot.textContent = '✓'; }
+        else if(i === current) { dot.classList.add('active'); dot.textContent = i; }
+        else { dot.textContent = i; }
+      }
+      for(let i=1;i<=2;i++) {
+        document.getElementById('line'+i).className = 'prog-line' + (i < current ? ' done' : '');
+      }
+    }
+
+    document.querySelectorAll('.quiz-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const name = opt.querySelector('input').name;
+        document.querySelectorAll(`[name="${name}"]`).forEach(r => r.closest('.quiz-opt').classList.remove('selected'));
+        opt.classList.add('selected');
+      });
+    });
+
+    // Full question bank
+    const questionBank = [
+      { text: 'What comes next: 2, 6, 12, 20, 30, <strong>?</strong>', opts: ['36','40','42','48'], correct: '42' },
+      { text: '"Tree" is to "Forest" as "Soldier" is to:', opts: ['Gun','Army','Battle','Uniform'], correct: 'Army' },
+      { text: 'If \'DATA\' is coded as \'EBUB\', how is \'CODE\' coded?', opts: ['DPEF','BNCF','DPFF','DOEE'], correct: 'DPEF' },
+      { text: 'Which planet is known as the Red Planet?', opts: ['Venus','Mars','Jupiter','Saturn'], correct: 'Mars' },
+      { text: 'If a train travels 60 km in 1 hour, how far will it travel in 2.5 hours?', opts: ['120 km','150 km','180 km','200 km'], correct: '150 km' },
+      { text: 'Who wrote the Indian National Anthem "Jana Gana Mana"?', opts: ['Bankim Chandra Chatterjee','Rabindranath Tagore','Mahatma Gandhi','Jawaharlal Nehru'], correct: 'Rabindranath Tagore' },
+      { text: 'Find the odd one out: Mango, Apple, Carrot, Banana', opts: ['Mango','Apple','Carrot','Banana'], correct: 'Carrot' },
+      { text: 'If you rearrange the letters "CIFAIPC", you get the name of a/an:', opts: ['City','Ocean','Animal','Country'], correct: 'Ocean' },
+      { text: 'A shopkeeper buys a pen for ₹20 and sells it for ₹25. What is his profit percentage?', opts: ['20%','25%','30%','10%'], correct: '25%' },
+      { text: 'Which gas do plants absorb from the atmosphere during photosynthesis?', opts: ['Oxygen','Nitrogen','Carbon Dioxide','Hydrogen'], correct: 'Carbon Dioxide' }
+    ];
+
+    let activeQuestions = [];
+
+    function loadRandomQuestions() {
+      const shuffled = [...questionBank].sort(() => Math.random() - 0.5);
+      activeQuestions = shuffled.slice(0, 5);
+
+      const container = document.getElementById('quizContainer');
+      container.innerHTML = activeQuestions.map((q, i) => `
+        <div class="quiz-q">
+          <div class="q-text">Q${i+1}. ${q.text}</div>
+          <div class="quiz-opts">
+            ${q.opts.map(opt => `
+              <label class="quiz-opt">
+                <input type="radio" name="aq${i}" value="${opt}"> ${opt}
+              </label>`).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      // Add click highlight effect
+      container.querySelectorAll('.quiz-opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const name = opt.querySelector('input').name;
+          container.querySelectorAll(`[name="${name}"]`).forEach(r => r.closest('.quiz-opt').classList.remove('selected'));
+          opt.classList.add('selected');
+        });
+      });
+    }
+
+    loadRandomQuestions();
+
+    function submitForm() {
+      let allAnswered = true;
+      activeQuestions.forEach((q, i) => {
+        if(!document.querySelector(`[name="aq${i}"]:checked`)) allAnswered = false;
+      });
+
+      if(!allAnswered) {
+        document.getElementById('quizErr').style.display = 'block'; return;
+      }
+
+      const score = activeQuestions.filter((q, i) => {
+        const ans = document.querySelector(`[name="aq${i}"]:checked`);
+        return ans && ans.value === q.correct;
+      }).length;
+
+      const data = { ...marks, interest: selectedInterest, quiz_score: score, type: '10th' };
+      sessionStorage.setItem('predictionData', JSON.stringify(data));
+      window.location.href = '/result';
+    }
+
+    // Stars
+    const canvas = document.getElementById('stars'), ctx = canvas.getContext('2d');
+    function resize() { canvas.width=innerWidth; canvas.height=innerHeight; }
+    resize(); window.addEventListener('resize',resize);
+    const stars = Array.from({length:150},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.2,a:Math.random(),s:0.0003+Math.random()*0.0005}));
+    (function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{s.a+=s.s;if(s.a>1)s.a=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(80,120,210,${s.a * 0.5})`;ctx.fill();});requestAnimationFrame(draw);})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile — Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f4ff; --card: rgba(255,255,255,0.92);
+      --primary: #4f8ef7; --violet: #8b5cf6; --gold: #c2780a;
+      --green: #10b981; --pink: #ec4899;
+      --text: #0f172a; --muted: #64748b; --border: rgba(59,125,232,0.22);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Nunito',sans-serif; min-height:100vh; }
+    canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+    .orb { position:fixed; border-radius:50%; filter:blur(130px); pointer-events:none; z-index:0; }
+    .orb-1 { width:450px; height:450px; background:rgba(79,142,247,0.1); top:-80px; right:-80px; }
+    .orb-2 { width:380px; height:380px; background:rgba(139,92,246,0.08); bottom:0; left:-80px; }
+
+    /* NAV */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:18px 48px;
+      background:rgba(240,244,255,0.92); backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+    }
+    .logo { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; letter-spacing:2px; color:var(--text); text-decoration:none; }
+    .logo span { color:var(--gold); }
+    .nav-right { display:flex; align-items:center; gap:24px; }
+    .nav-right a { color:var(--muted); text-decoration:none; font-size:0.88rem; font-weight:700; transition:color .3s; }
+    .nav-right a:hover { color:var(--text); }
+    .dropdown { position:relative; }
+    .drop-btn { background:none; border:1.5px solid var(--border); border-radius:50px; color:var(--muted); font-size:0.85rem; font-weight:700; padding:8px 18px; cursor:pointer; font-family:'Nunito',sans-serif; transition:all .3s; }
+    .drop-btn:hover { border-color:var(--primary); color:var(--text); }
+    .drop-menu { display:none; position:absolute; top:110%; right:0; background:rgba(240,244,255,0.97); border:1px solid var(--border); border-radius:14px; padding:8px; min-width:180px; backdrop-filter:blur(16px); z-index:999; }
+    .drop-menu a { display:block; padding:10px 16px; color:var(--muted); text-decoration:none; font-size:0.85rem; font-weight:700; border-radius:8px; transition:all .2s; }
+    .drop-menu a:hover { background:rgba(79,142,247,0.1); color:var(--text); }
+    .dropdown:hover .drop-menu { display:block; }
+
+    /* PROFILE DROPDOWN */
+    .profile-wrap { position:relative; }
+    .profile-avatar-btn {
+      width:38px; height:38px; border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--violet));
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.95rem; font-weight:800; color:#fff;
+      cursor:pointer; border:2px solid rgba(79,142,247,0.4);
+      box-shadow:0 0 14px rgba(79,142,247,0.3);
+      transition:all .3s; user-select:none;
+    }
+    .profile-avatar-btn:hover { transform:scale(1.08); }
+    .profile-dropdown {
+      display:none; position:absolute; top:calc(100% + 14px); right:0;
+      min-width:220px; background:rgba(255,255,255,0.97);
+      border:1px solid var(--border); border-radius:18px; padding:8px;
+      box-shadow:0 16px 50px rgba(0,0,0,0.13);
+      backdrop-filter:blur(16px); z-index:999;
+      animation:dropFade .22s ease;
+    }
+    @keyframes dropFade { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+    .profile-dropdown.open { display:block; }
+    .pdrop-header { display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--border); margin-bottom:6px; }
+    .pdrop-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--violet)); color:#fff; font-family:'Bebas Neue',sans-serif; font-size:1.2rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .pdrop-name { font-size:.92rem; font-weight:800; color:var(--text); }
+    .pdrop-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:10px; color:var(--text); text-decoration:none; font-size:.86rem; font-weight:600; transition:background .2s; }
+    .pdrop-item:hover { background:rgba(79,142,247,0.08); }
+    .pdrop-item .di { font-size:1rem; width:20px; text-align:center; }
+    .pdrop-divider { height:1px; background:var(--border); margin:6px 8px; }
+    .pdrop-item.logout { color:#ef4444; }
+    .pdrop-item.logout:hover { background:rgba(239,68,68,0.08); }
+
+    /* MAIN */
+    main { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:110px 24px 80px; }
+
+    /* PAGE HEADER */
+    .page-header { margin-bottom:40px; }
+    .page-tag { font-size:0.75rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+    .page-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,4vw,3rem); letter-spacing:1px; line-height:1; }
+    .page-sub { color:var(--muted); font-size:0.9rem; margin-top:8px; }
+
+    /* PROFILE CARD */
+    .profile-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:24px; padding:40px;
+      backdrop-filter:blur(16px); margin-bottom:24px;
+      display:flex; align-items:center; gap:32px; flex-wrap:wrap;
+    }
+    .profile-big-avatar {
+      width:90px; height:90px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,var(--primary),var(--violet));
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Bebas Neue',sans-serif; font-size:2.6rem; color:#fff;
+      box-shadow:0 0 28px rgba(79,142,247,0.35);
+      border:3px solid rgba(79,142,247,0.3);
+    }
+    .profile-info { flex:1; }
+    .profile-fullname { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:1px; margin-bottom:4px; }
+    .profile-since { font-size:0.78rem; color:var(--muted); font-weight:600; letter-spacing:0.5px; }
+    .profile-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:var(--green); padding:5px 14px; border-radius:50px; font-size:0.75rem; font-weight:700; margin-top:10px; }
+
+    /* INFO SECTION */
+    .info-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:32px; backdrop-filter:blur(16px); margin-bottom:24px; }
+    .info-card-title { font-size:0.72rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:24px; display:flex; align-items:center; gap:8px; }
+    .info-card-title span { font-size:1rem; }
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .info-field { }
+    .field-label { font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+    .field-value { font-size:1rem; font-weight:700; color:var(--text); background:rgba(79,142,247,0.05); border:1px solid var(--border); border-radius:10px; padding:12px 16px; }
+    .field-value.muted-val { color:var(--muted); font-weight:600; font-size:0.88rem; }
+
+    /* ASSESSMENT HISTORY */
+    .history-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:32px; backdrop-filter:blur(16px); margin-bottom:24px; }
+    .history-title { font-size:0.72rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:24px; display:flex; align-items:center; gap:8px; }
+
+    /* RESULT ITEM */
+    .result-item {
+      border:1px solid var(--border); border-radius:16px; padding:24px;
+      margin-bottom:16px; display:flex; align-items:center; gap:20px;
+      transition:all .3s; flex-wrap:wrap;
+    }
+    .result-item:hover { border-color:rgba(79,142,247,0.35); background:rgba(79,142,247,0.03); }
+    .result-item:last-child { margin-bottom:0; }
+    .result-emoji { font-size:2.2rem; flex-shrink:0; }
+    .result-info { flex:1; }
+    .result-class { font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+    .result-stream { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:1px; margin-bottom:4px; }
+    .result-date { font-size:0.75rem; color:var(--muted); font-weight:600; }
+    .result-conf { text-align:center; flex-shrink:0; }
+    .conf-circle {
+      width:64px; height:64px; border-radius:50%;
+      border:3px solid rgba(79,142,247,0.3);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:rgba(79,142,247,0.06);
+    }
+    .conf-num { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; color:var(--primary); line-height:1; }
+    .conf-lbl { font-size:0.55rem; color:var(--muted); font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+    .result-btn { padding:8px 18px; border-radius:50px; background:linear-gradient(135deg,var(--primary),var(--violet)); color:#fff; font-size:0.8rem; font-weight:700; text-decoration:none; transition:all .3s; flex-shrink:0; }
+    .result-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(79,142,247,0.4); }
+
+    /* EMPTY STATE */
+    .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
+    .empty-icon { font-size:3rem; margin-bottom:12px; }
+    .empty-text { font-size:0.92rem; margin-bottom:20px; }
+    .btn-start { display:inline-block; padding:12px 28px; background:linear-gradient(135deg,var(--primary),var(--violet)); color:#fff; border-radius:50px; font-weight:800; font-size:0.9rem; text-decoration:none; transition:all .3s; }
+    .btn-start:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(79,142,247,0.4); }
+
+    @media(max-width:768px){
+      nav { padding:16px 20px; }
+      .profile-card { flex-direction:column; align-items:flex-start; gap:20px; }
+      .info-grid { grid-template-columns:1fr; }
+      .result-item { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <nav>
+    <a class="logo" href="/">Career<span>.</span>learning</a>
+    <div class="nav-right">
+      <div class="dropdown">
+        <button class="drop-btn">🛠️ Tools ▾</button>
+        <div class="drop-menu">
+          <a href="/resource">📚 Resources</a>
+          <a href="/collage">🎓 collages</a>
+          <a href="/exam-tracker">📅 Exam Tracker</a>
+          <a href="/cutoff">🎯 Cutoff</a>
+        </div>
+      </div>
+      <a href="/chatbot" style="color:var(--green);font-weight:800;">💬 CareerBot</a>
+      <div class="profile-wrap" id="profileWrap">
+        <div class="profile-avatar-btn" id="profileBtn">{{ fullname[0]|upper if fullname else "S" }}</div>
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="pdrop-header">
+            <div class="pdrop-avatar">{{ fullname[0]|upper if fullname else "S" }}</div>
+            <div class="pdrop-name">{{ fullname if fullname else "Student" }}</div>
+          </div>
+          <a class="pdrop-item" href="/profile"><span class="di">👤</span> My Profile</a>
+          <a class="pdrop-item logout" href="/logout"><span class="di">🚪</span> Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <div class="page-header">
+      <div class="page-tag">👤 My Account</div>
+      <div class="page-title">MY PROFILE</div>
+      <div class="page-sub">Your personal information and assessment history</div>
+    </div>
+
+    <!-- PROFILE CARD -->
+    <div class="profile-card">
+      <div class="profile-big-avatar">{{ fullname[0]|upper if fullname else "S" }}</div>
+      <div class="profile-info">
+        <div class="profile-fullname">{{ fullname if fullname else "Student" }}</div>
+        <div class="profile-since">Career.learning Member</div>
+        <div class="profile-badge">✦ Active Student</div>
+      </div>
+    </div>
+
+    <!-- PERSONAL INFO -->
+    <div class="info-card">
+      <div class="info-card-title"><span>📋</span> Personal Information</div>
+      <div class="info-grid">
+        <div class="info-field">
+          <div class="field-label">Full Name</div>
+          <div class="field-value">{{ fullname if fullname else "—" }}</div>
+        </div>
+        <div class="info-field">
+          <div class="field-label">Email Address</div>
+          <div class="field-value">{{ email if email else "—" }}</div>
+        </div>
+        <div class="info-field">
+          <div class="field-label">Phone Number</div>
+          <div class="field-value">{{ phone if phone else "—" }}</div>
+        </div>
+        <div class="info-field">
+          <div class="field-label">Account Status</div>
+          <div class="field-value" style="color:var(--green);">✓ Active</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSESSMENT HISTORY -->
+    <div class="history-card">
+      <div class="history-title"><span>📊</span> Assessment History</div>
+
+      {% if results and results|length > 0 %}
+        {% for r in results %}
+        <div class="result-item">
+          <div class="result-emoji">
+            {% if r.type == '10th' %}🎓{% else %}🚀{% endif %}
+          </div>
+          <div class="result-info">
+            <div class="result-class">Class {{ r.type }} Assessment</div>
+            <div class="result-stream">{{ r.prediction }}</div>
+            <div class="result-date">{{ r.created_at.strftime('%d %B %Y') if r.created_at else "—" }}</div>
+          </div>
+          <div class="result-conf">
+            <div class="conf-circle">
+              <div class="conf-num">{{ r.confidence }}%</div>
+              <div class="conf-lbl">Match</div>
+            </div>
+          </div>
+          <a class="result-btn" href="/result">View Result →</a>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-text">Aapne abhi tak koi assessment complete nahi ki hai.</div>
+          <a class="btn-start" href="/dashboard">Start Assessment →</a>
+        </div>
+      {% endif %}
+
+    </div>
+
+  </main>
+
+  <script>
+    // Profile Dropdown
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => profileDropdown.classList.remove('open'));
+    profileDropdown.addEventListener('click', e => e.stopPropagation());
+
+    // Stars
+    const canvas = document.getElementById('stars'), ctx = canvas.getContext('2d');
+    function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    const stars = Array.from({length:160}, () => ({x:Math.random()*innerWidth, y:Math.random()*innerHeight, r:Math.random()*1.3, a:Math.random(), s:.0002+Math.random()*.0005}));
+    (function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      stars.forEach(s => { s.a+=s.s; if(s.a>1)s.a=0; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle=`rgba(80,120,210,${s.a*0.5})`; ctx.fill(); });
+      requestAnimationFrame(draw);
+    })();
+  </script>
+</body>
+</html>

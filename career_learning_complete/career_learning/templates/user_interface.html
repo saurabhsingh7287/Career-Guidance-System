@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Career.learning — Intelligent Career Guidance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f4ff;
+      --bg1: #e4ebff;
+      --glass: rgba(255,255,255,0.9);
+      --primary: #4f8ef7;
+      --violet: #8b5cf6;
+      --gold: #c2780a;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: rgba(59,125,232,0.22);
+      --glow: rgba(79,142,247,0.35);
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    canvas#stars {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 22px 60px;
+      background: rgba(240,244,255,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.7rem; letter-spacing: 2px; color: var(--text);
+      text-decoration: none;
+    }
+    .logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 600; transition: color .3s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn-nav {
+      padding: 10px 24px; border-radius: 50px; font-weight: 700; font-size: 0.9rem;
+      text-decoration: none; transition: all .3s; cursor: pointer;
+    }
+    .btn-outline {
+      border: 1.5px solid var(--border); color: var(--text); background: transparent;
+    }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-fill {
+      background: linear-gradient(135deg, var(--primary), var(--violet));
+      color: #fff; border: none;
+      box-shadow: 0 4px 20px rgba(79,142,247,0.35);
+    }
+    .btn-fill:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(79,142,247,0.5); }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+      padding: 140px 60px 80px;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3);
+      color: var(--primary); padding: 6px 16px; border-radius: 50px;
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeUp 0.8s ease both;
+    }
+    .hero-tag::before { content: '●'; font-size: 0.5rem; }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      line-height: 0.95; letter-spacing: 2px;
+      max-width: 780px;
+      animation: fadeUp 0.8s 0.15s ease both;
+    }
+    .hero h1 .accent { color: var(--gold); }
+    .hero h1 .grad {
+      background: linear-gradient(90deg, var(--primary), var(--violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      max-width: 520px; font-size: 1.15rem; line-height: 1.7;
+      color: var(--muted); margin-top: 24px; font-weight: 400;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+    .hero-ctas {
+      display: flex; gap: 16px; margin-top: 40px;
+      animation: fadeUp 0.8s 0.45s ease both;
+    }
+    .btn-hero-primary {
+      background: linear-gradient(135deg, var(--primary), var(--violet));
+      color: #fff; padding: 15px 38px; border-radius: 50px;
+      font-weight: 800; font-size: 1rem; text-decoration: none;
+      box-shadow: 0 0 40px rgba(79,142,247,0.4);
+      transition: all .3s; display: inline-block;
+    }
+    .btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 0 60px rgba(79,142,247,0.6); }
+    .btn-hero-ghost {
+      border: 1.5px solid rgba(139,92,246,0.4); color: var(--text);
+      padding: 15px 38px; border-radius: 50px; font-weight: 700;
+      font-size: 1rem; text-decoration: none; transition: all .3s;
+    }
+    .btn-hero-ghost:hover { border-color: var(--violet); background: rgba(139,92,246,0.1); }
+
+    /* STATS */
+    .stats-row {
+      position: relative; z-index: 1;
+      display: flex; gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(240,244,255,0.75);
+      backdrop-filter: blur(12px);
+      animation: fadeUp 0.8s 0.6s ease both;
+    }
+    .stat-item {
+      flex: 1; padding: 32px 40px;
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem; color: var(--primary);
+      line-height: 1;
+    }
+    .stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 6px; font-weight: 600; letter-spacing: 0.5px; }
+
+    /* FEATURES */
+    .features {
+      position: relative; z-index: 1;
+      padding: 100px 60px;
+    }
+    .section-label {
+      text-align: center; color: var(--primary);
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      text-align: center; letter-spacing: 1px; margin-bottom: 60px;
+    }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .feat-card {
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px 30px;
+      backdrop-filter: blur(12px);
+      transition: all .35s; position: relative; overflow: hidden;
+    }
+    .feat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--violet));
+      opacity: 0; transition: opacity .35s;
+    }
+    .feat-card:hover { transform: translateY(-8px); border-color: rgba(79,142,247,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    .feat-card:hover::before { opacity: 1; }
+    .feat-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(79,142,247,0.2), rgba(139,92,246,0.2));
+      border: 1px solid rgba(79,142,247,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 20px;
+    }
+    .feat-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+    .feat-card p { color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+
+    /* CTA SECTION */
+    .cta-section {
+      position: relative; z-index: 1;
+      padding: 80px 60px;
+      text-align: center;
+    }
+    .cta-box {
+      max-width: 700px; margin: 0 auto;
+      background: linear-gradient(135deg, rgba(79,142,247,0.1), rgba(139,92,246,0.1));
+      border: 1px solid rgba(79,142,247,0.25);
+      border-radius: 28px; padding: 64px 48px;
+      backdrop-filter: blur(16px);
+    }
+    .cta-box h2 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 1px; margin-bottom: 16px; }
+    .cta-box p { color: var(--muted); font-size: 1.05rem; margin-bottom: 32px; }
+
+    /* FOOTER */
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 28px 60px;
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--muted); font-size: 0.88rem;
+    }
+
+    /* ORBS */
+    .orb {
+      position: fixed; border-radius: 50%; filter: blur(120px);
+      pointer-events: none; z-index: 0;
+    }
+    .orb-1 { width: 500px; height: 500px; background: rgba(79,142,247,0.12); top: -100px; right: -100px; }
+    .orb-2 { width: 400px; height: 400px; background: rgba(139,92,246,0.1); bottom: 100px; left: -100px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 18px 24px; }
+      .hero { padding: 120px 24px 60px; }
+      .features { padding: 60px 24px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .stats-row { flex-wrap: wrap; }
+      .stat-item { flex: 1 0 50%; border-right: none; border-bottom: 1px solid var(--border); }
+      footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <nav>
+    <a class="logo" href="/">Career<span>.</span>learning</a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/resource">Resources</a></li>
+      <li><a href="/collage">🎓 collages</a></li>
+      <li><a href="/exam-tracker">📅 Exam Tracker</a></li>
+      <li><a href="/cutoff">🎯 Cutoff</a></li>
+      <li><a href="/login" class="btn-nav btn-outline">Login</a></li>
+      <li><a href="/register" class="btn-nav btn-fill">Register</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag">AI-Powered Guidance Platform</div>
+    <h1>FIND YOUR <span class="accent">PERFECT</span><br><span class="grad">CAREER PATH</span></h1>
+    <p class="hero-sub">Confused after Class 10 or 12? Our intelligent system analyses your marks, interests & aptitude to predict the ideal stream and career for you.</p>
+    <div class="hero-ctas">
+      <a href="/register" class="btn-hero-primary">Start Free Assessment →</a>
+      <a href="#features" class="btn-hero-ghost">Learn More</a>
+    </div>
+  </section>
+
+  <div class="stats-row">
+    <div class="stat-item"><div class="stat-number" data-target="12000">0</div><div class="stat-label">Students Guided</div></div>
+    <div class="stat-item"><div class="stat-number" data-target="94">0</div><div class="stat-label">% Accuracy Rate</div></div>
+    <div class="stat-item"><div class="stat-number" data-target="50">0</div><div class="stat-label">Career Paths Mapped</div></div>
+    <div class="stat-item"><div class="stat-number" data-target="3">0</div><div class="stat-label">Minutes to Get Results</div></div>
+  </div>
+
+  <section class="features" id="features">
+    <div class="section-label">What We Offer</div>
+    <div class="section-title">Your Journey, Guided By <span style="color:var(--primary)">Intelligence</span></div>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🎯</div>
+        <h3>Class 10 Stream Predictor</h3>
+        <p>Enter your marks and take a quick aptitude quiz. Our AI recommends the best stream — Science, Commerce, or Arts — tailored to you.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🚀</div>
+        <h3>Class 12 Career Predictor</h3>
+        <p>Tell us your stream and marks. Get personalized career path suggestions including top collages, entrance exams, and career roadmaps.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📚</div>
+        <h3>Smart Resource Hub</h3>
+        <p>Curated study materials, video lectures, and learning paths for Class 10, Class 12 — all organized by subject and stream.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🎓</div>
+        <h3>collage Finder</h3>
+        <p>Explore India's top collages filtered by state, city, course and type — with full step-by-step admission process for every institution.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📅</div>
+        <h3>Exam Tracker</h3>
+        <p>Complete syllabus, previous year cutoffs, and expert preparation tips for JEE, NEET, CLAT and all major entrance exams.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🎯</div>
+        <h3>Cutoff Predictor</h3>
+        <p>Check expected cutoffs for top collages and predict your admission chances based on your score and category.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-box">
+      <h2>READY TO DISCOVER YOUR PATH?</h2>
+      <p>Take our free 5-minute assessment and get a personalized career roadmap powered by AI.</p>
+      <a href="/register" class="btn-hero-primary">Get Started — It's Free</a>
+    </div>
+  </section>
+
+  <footer>
+    <div>© <strong>Career.learning</strong> 2026 — Intelligent Career Guidance</div>
+    <div style="display:flex;gap:24px;">
+      <a href="/" style="color:var(--muted);text-decoration:none">Home</a>
+      <a href="/resource" style="color:var(--muted);text-decoration:none">Resources</a>
+      <a href="/login" style="color:var(--muted);text-decoration:none">Login</a>
+    </div>
+  </footer>
+
+  <script>
+    // Starfield
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    for (let i = 0; i < 200; i++) {
+      stars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+        r: Math.random()*1.5, a: Math.random(), speed: 0.0002 + Math.random()*0.0004 });
+    }
+    function drawStars() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      stars.forEach(s => {
+        s.a += s.speed; if(s.a>1) s.a=0;
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(80,120,210,${s.a * 0.5})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(drawStars);
+    }
+    drawStars();
+
+    // Counter animation
+    const counters = document.querySelectorAll('[data-target]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting) {
+          const target = +e.target.dataset.target;
+          let count = 0;
+          const step = target / 80;
+          const timer = setInterval(() => {
+            count = Math.min(count + step, target);
+            e.target.textContent = count >= 1000 ? (count/1000).toFixed(1)+'K+' : Math.floor(count)+(target===94?'%':'');
+            if(count >= target) clearInterval(timer);
+          }, 20);
+          observer.unobserve(e.target);
+        }
+      });
+    });
+    counters.forEach(c => observer.observe(c));
+  </script>
+</body>
+</html>

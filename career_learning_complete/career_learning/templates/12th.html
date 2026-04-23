@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class 12 Career Predictor — Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f4ff; --card: #ffffff;
+      --primary: #8b5cf6; --violet: #ec4899; --gold: #c2780a;
+      --green: #10b981; --text: #0f172a; --muted: #64748b; --border: rgba(124,58,237,0.22);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; min-height: 100vh; padding: 80px 20px; }
+    canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+    .orb { position:fixed; border-radius:50%; filter:blur(130px); pointer-events:none; z-index:0; }
+    .orb-1 { width:400px; height:400px; background:rgba(139,92,246,0.1); top:-100px; right:-100px; }
+    .orb-2 { width:350px; height:350px; background:rgba(236,72,153,0.07); bottom:0; left:-100px; }
+
+    .back { position:fixed; top:24px; left:32px; z-index:10; color:var(--muted); text-decoration:none; font-size:0.88rem; font-weight:700; display:flex; align-items:center; gap:8px; transition:color .3s; }
+    .back:hover { color:var(--primary); }
+    .page-logo { position:fixed; top:20px; right:32px; z-index:10; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; color:var(--text); text-decoration:none; letter-spacing:2px; }
+    .page-logo span { color:var(--gold); }
+    .nav-links-top { position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10; display:flex; gap:20px; }
+    .nav-links-top a { color:var(--muted); text-decoration:none; font-size:0.82rem; font-weight:700; transition:color .3s; }
+    .nav-links-top a:hover { color:var(--text); }
+
+    .page-wrap { position:relative; z-index:1; max-width:640px; margin:0 auto; }
+    .page-header { text-align:center; margin-bottom:48px; }
+    .page-tag { display:inline-flex; align-items:center; gap:8px; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3); color:var(--primary); padding:6px 16px; border-radius:50px; font-size:0.78rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; }
+    .page-header h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.2rem,5vw,3.5rem); letter-spacing:1px; margin-bottom:10px; }
+    .page-header h1 span { background:linear-gradient(90deg,var(--primary),var(--violet)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .page-header p { color:var(--muted); font-size:0.95rem; }
+
+    .progress-bar { display:flex; justify-content:center; gap:8px; margin-bottom:40px; }
+    .prog-step { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .prog-dot { width:36px; height:36px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; color:var(--muted); transition:all .4s; }
+    .prog-dot.active { border-color:var(--primary); color:var(--primary); background:rgba(139,92,246,0.1); box-shadow:0 0 16px rgba(139,92,246,0.3); }
+    .prog-dot.done { border-color:var(--green); background:var(--green); color:#fff; }
+    .prog-label { font-size:0.7rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+    .prog-line { width:60px; height:2px; background:var(--border); margin-top:18px; transition:background .4s; }
+    .prog-line.done { background:var(--green); }
+
+    .form-step { display:none; animation:fadeStep .4s ease; }
+    .form-step.active { display:block; }
+    @keyframes fadeStep { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+    .form-card { background:rgba(255,255,255,0.90); border:1px solid var(--border); border-radius:20px; padding:36px; backdrop-filter:blur(16px); margin-bottom:24px; }
+    .card-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:1px; margin-bottom:24px; display:flex; align-items:center; gap:10px; }
+    .card-title .tag { font-size:0.72rem; font-family:'Nunito',sans-serif; background:rgba(139,92,246,0.15); color:var(--primary); padding:3px 10px; border-radius:50px; letter-spacing:1px; text-transform:uppercase; }
+
+    /* STREAM SELECT */
+    .stream-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .stream-opt { border:1.5px solid var(--border); border-radius:14px; padding:18px; cursor:pointer; transition:all .3s; display:flex; align-items:center; gap:12px; }
+    .stream-opt:hover { border-color:rgba(139,92,246,0.4); background:rgba(139,92,246,0.05); }
+    .stream-opt.selected { border-color:var(--primary); background:rgba(139,92,246,0.12); box-shadow:0 0 20px rgba(139,92,246,0.2); }
+    .stream-icon { font-size:1.6rem; }
+    .stream-info h4 { font-size:0.9rem; font-weight:700; }
+    .stream-info p { font-size:0.75rem; color:var(--muted); margin-top:2px; }
+
+    /* MARKS */
+    .marks-grid { display:grid; grid-template-columns:1fr; gap:20px; }
+    .marks-item label { display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:10px; }
+    .marks-item label .val { color:var(--primary); font-size:1rem; }
+    .marks-slider { width:100%; -webkit-appearance:none; height:4px; border-radius:4px; background:rgba(139,92,246,0.2); outline:none; cursor:pointer; }
+    .marks-slider::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--violet)); cursor:pointer; box-shadow:0 0 8px rgba(139,92,246,0.5); }
+    .marks-number { width:100%; padding:10px 16px; background:rgba(0,0,0,0.05); border:1px solid var(--border); border-radius:10px; font-size:1rem; font-weight:700; color:var(--primary); text-align:center; margin-top:6px; font-family:'Nunito',sans-serif; }
+
+    /* CAREER GOALS */
+    .goal-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .goal-opt { border:1.5px solid var(--border); border-radius:14px; padding:16px; cursor:pointer; transition:all .3s; text-align:center; }
+    .goal-opt:hover { border-color:rgba(139,92,246,0.4); background:rgba(139,92,246,0.05); }
+    .goal-opt.selected { border-color:var(--primary); background:rgba(139,92,246,0.12); box-shadow:0 0 20px rgba(139,92,246,0.2); }
+    .goal-icon { font-size:1.8rem; margin-bottom:8px; }
+    .goal-name { font-size:0.85rem; font-weight:700; }
+
+    /* QUIZ */
+    .quiz-q { margin-bottom:28px; }
+    .quiz-q .q-text { font-weight:700; margin-bottom:14px; font-size:0.95rem; line-height:1.5; }
+    .quiz-opts { display:flex; flex-direction:column; gap:8px; }
+    .quiz-opt { display:flex; align-items:center; gap:12px; padding:12px 16px; border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all .3s; font-size:0.9rem; font-weight:600; }
+    .quiz-opt:hover { border-color:rgba(139,92,246,0.4); background:rgba(139,92,246,0.05); }
+    .quiz-opt.selected { border-color:var(--primary); background:rgba(139,92,246,0.12); }
+    .quiz-opt input { accent-color:var(--primary); }
+
+    .btn-row { display:flex; gap:12px; margin-top:16px; }
+    .btn-back-step { flex:1; padding:14px; border:1.5px solid var(--border); border-radius:12px; background:transparent; color:var(--muted); font-size:0.95rem; font-weight:700; cursor:pointer; font-family:'Nunito',sans-serif; transition:all .3s; }
+    .btn-back-step:hover { border-color:var(--muted); color:var(--text); }
+    .btn-next { flex:2; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,var(--primary),var(--violet)); color:#fff; font-size:1rem; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; box-shadow:0 4px 20px rgba(139,92,246,0.3); transition:all .3s; }
+    .btn-next:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(139,92,246,0.5); }
+    .btn-predict { flex:2; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,#8b5cf6,#ec4899); color:#fff; font-size:1rem; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; box-shadow:0 4px 20px rgba(139,92,246,0.4); transition:all .3s; }
+    .btn-predict:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(139,92,246,0.55); }
+    .error-msg { color:#ef4444; font-size:0.82rem; margin-top:10px; display:none; }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <a class="back" href="/dashboard">← Dashboard</a>
+  <div class="nav-links-top">
+    <a href="/resource">Resources</a>
+    <a href="/collage">🎓 collages</a>
+    <a href="/exam-tracker">📅 Exam Tracker</a>
+    <a href="/cutoff">🎯 Cutoff</a>
+    <a href="/chatbot">💬 CareerBot</a>
+    <a href="/logout">Logout</a>
+  </div>
+  <a class="page-logo" href="/">Career<span>.</span>learning</a>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <div class="page-tag">✦ AI Assessment</div>
+      <h1>CLASS 12<br><span>CAREER PREDICTOR</span></h1>
+      <p>Tell us about your stream and goals — AI will map your career path</p>
+    </div>
+
+    <div class="progress-bar">
+      <div class="prog-step"><div class="prog-dot active" id="dot1">1</div><div class="prog-label">Stream</div></div>
+      <div class="prog-line" id="line1"></div>
+      <div class="prog-step"><div class="prog-dot" id="dot2">2</div><div class="prog-label">Marks</div></div>
+      <div class="prog-line" id="line2"></div>
+      <div class="prog-step"><div class="prog-dot" id="dot3">3</div><div class="prog-label">Goal</div></div>
+      <div class="prog-line" id="line3"></div>
+      <div class="prog-step"><div class="prog-dot" id="dot4">4</div><div class="prog-label">Quiz</div></div>
+    </div>
+
+    <!-- STEP 1: Stream -->
+    <div class="form-step active" id="step1">
+      <div class="form-card">
+        <div class="card-title">Current Stream <span class="tag">Select One</span></div>
+        <div class="stream-grid">
+          <div class="stream-opt" onclick="selectStream(this,'pcm')"><div class="stream-icon">⚛️</div><div class="stream-info"><h4>Science (PCM)</h4><p>Physics, Chemistry, Maths</p></div></div>
+          <div class="stream-opt" onclick="selectStream(this,'pcb')"><div class="stream-icon">🧬</div><div class="stream-info"><h4>Science (PCB)</h4><p>Physics, Chemistry, Biology</p></div></div>
+          <div class="stream-opt" onclick="selectStream(this,'commerce')"><div class="stream-icon">📊</div><div class="stream-info"><h4>Commerce</h4><p>Accounts, Business, Economics</p></div></div>
+          <div class="stream-opt" onclick="selectStream(this,'arts')"><div class="stream-icon">🏛️</div><div class="stream-info"><h4>Arts / Humanities</h4><p>History, Geo, Political Sci</p></div></div>
+        </div>
+        <div class="error-msg" id="streamErr">Please select your stream.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-next" onclick="goStep(2)">Next: Enter Marks →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Marks -->
+    <div class="form-step" id="step2">
+      <div class="form-card">
+        <div class="card-title">Core Subject Marks <span class="tag">Out of 100</span></div>
+        <div class="marks-grid">
+          <div class="marks-item">
+            <label id="core1_label">Core Subject 1 <span class="val" id="core1_val">75</span></label>
+            <input type="range" class="marks-slider" id="core1_slider" min="0" max="100" value="75" oninput="syncCore(1,this.value)">
+            <input class="marks-number" type="number" id="core1_num" min="0" max="100" value="75" oninput="syncCore(1,this.value)">
+          </div>
+          <div class="marks-item">
+            <label id="core2_label">Core Subject 2 <span class="val" id="core2_val">75</span></label>
+            <input type="range" class="marks-slider" id="core2_slider" min="0" max="100" value="75" oninput="syncCore(2,this.value)">
+            <input class="marks-number" type="number" id="core2_num" min="0" max="100" value="75" oninput="syncCore(2,this.value)">
+          </div>
+          <div class="marks-item">
+            <label id="core3_label">Core Subject 3 <span class="val" id="core3_val">75</span></label>
+            <input type="range" class="marks-slider" id="core3_slider" min="0" max="100" value="75" oninput="syncCore(3,this.value)">
+            <input class="marks-number" type="number" id="core3_num" min="0" max="100" value="75" oninput="syncCore(3,this.value)">
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back-step" onclick="goStep(1)">← Back</button>
+        <button class="btn-next" onclick="goStep(3)">Next: Career Goal →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Goal -->
+    <div class="form-step" id="step3">
+      <div class="form-card">
+        <div class="card-title">Broad Career Goal <span class="tag">Select One</span></div>
+        <div class="goal-grid">
+          <div class="goal-opt" onclick="selectGoal(this,'engineering')"><div class="goal-icon">⚙️</div><div class="goal-name">Engineering / Tech</div></div>
+          <div class="goal-opt" onclick="selectGoal(this,'medical')"><div class="goal-icon">🏥</div><div class="goal-name">Medical / Healthcare</div></div>
+          <div class="goal-opt" onclick="selectGoal(this,'finance')"><div class="goal-icon">💹</div><div class="goal-name">Finance / Management</div></div>
+          <div class="goal-opt" onclick="selectGoal(this,'civil_services')"><div class="goal-icon">⚖️</div><div class="goal-name">Civil Services / Law</div></div>
+        </div>
+        <div class="error-msg" id="goalErr">Please select a career goal.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back-step" onclick="goStep(2)">← Back</button>
+        <button class="btn-next" onclick="goStep(4)">Next: Logic Quiz →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Quiz -->
+    <div class="form-step" id="step4">
+      <div class="form-card">
+        <div class="card-title">Mini Logic Quiz <span class="tag">5 Questions</span></div>
+        <div id="quizContainer"></div>
+        <div class="error-msg" id="quizErr">Please answer all 5 questions.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back-step" onclick="goStep(3)">← Back</button>
+        <button class="btn-predict" onclick="submitForm()">🔮 Predict My Career</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedStream = '', selectedGoal = '';
+    const cores = { 1:75, 2:75, 3:75 };
+    const streamLabels = {
+      pcm: ['Physics','Chemistry','Mathematics'],
+      pcb: ['Physics','Chemistry','Biology'],
+      commerce: ['Accountancy','Business Studies','Economics'],
+      arts: ['History','Geography','Political Science']
+    };
+
+    function selectStream(el, val) {
+      document.querySelectorAll('.stream-opt').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected'); selectedStream = val;
+      document.getElementById('streamErr').style.display = 'none';
+      const labels = streamLabels[val];
+      labels.forEach((l,i) => { document.getElementById('core'+(i+1)+'_label').childNodes[0].textContent = l+' '; });
+    }
+
+    function syncCore(n, value) {
+      value = Math.max(0, Math.min(100, parseInt(value)||0));
+      cores[n] = value;
+      document.getElementById('core'+n+'_val').textContent = value;
+      document.getElementById('core'+n+'_slider').value = value;
+      document.getElementById('core'+n+'_num').value = value;
+    }
+
+    function selectGoal(el, val) {
+      document.querySelectorAll('.goal-opt').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected'); selectedGoal = val;
+      document.getElementById('goalErr').style.display = 'none';
+    }
+
+    function goStep(n) {
+      if(n===2 && !selectedStream) { document.getElementById('streamErr').style.display='block'; return; }
+      if(n===4 && !selectedGoal) { document.getElementById('goalErr').style.display='block'; return; }
+      document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step'+n).classList.add('active');
+      updateProgress(n);
+    }
+
+    function updateProgress(current) {
+      for(let i=1;i<=4;i++) {
+        const dot = document.getElementById('dot'+i);
+        dot.className = 'prog-dot';
+        if(i<current){dot.classList.add('done');dot.textContent='✓';}
+        else if(i===current){dot.classList.add('active');dot.textContent=i;}
+        else{dot.textContent=i;}
+      }
+      for(let i=1;i<=3;i++){
+        document.getElementById('line'+i).className='prog-line'+(i<current?' done':'');
+      }
+    }
+
+    // 12th level question bank (10 questions, pick 5 randomly)
+    const questionBank = [
+      { text: 'Which of the following is the powerhouse of the cell?', opts: ['Nucleus','Mitochondria','Ribosome','Golgi Body'], correct: 'Mitochondria' },
+      { text: 'What is the chemical formula of Sulphuric Acid?', opts: ['HCl','HNO3','H2SO4','H2CO3'], correct: 'H2SO4' },
+      { text: 'If GDP of a country increases but population also increases at the same rate, the standard of living:', opts: ['Increases','Decreases','Remains the same','Cannot be determined'], correct: 'Remains the same' },
+      { text: 'Who is known as the "Father of the Indian Constitution"?', opts: ['Mahatma Gandhi','Jawaharlal Nehru','B.R. Ambedkar','Sardar Patel'], correct: 'B.R. Ambedkar' },
+      { text: 'A current of 2A flows through a 5Ω resistor. What is the voltage across it?', opts: ['2.5V','7V','10V','3V'], correct: '10V' },
+      { text: 'Which Article of the Indian Constitution abolishes untouchability?', opts: ['Article 14','Article 17','Article 21','Article 32'], correct: 'Article 17' },
+      { text: 'In accounting, the equation Assets = Liabilities + ___?', opts: ['Revenue','Profit','Capital','Expenses'], correct: 'Capital' },
+      { text: 'The speed of light in vacuum is approximately:', opts: ['3×10⁶ m/s','3×10⁸ m/s','3×10¹⁰ m/s','3×10⁴ m/s'], correct: '3×10⁸ m/s' },
+      { text: 'Which of the following is NOT a primary colour of light?', opts: ['Red','Green','Blue','Yellow'], correct: 'Yellow' },
+      { text: 'The law of demand states that, all else equal, as price increases, quantity demanded:', opts: ['Increases','Decreases','Stays the same','Doubles'], correct: 'Decreases' }
+    ];
+
+    let activeQuestions = [];
+
+    function loadRandomQuestions() {
+      const shuffled = [...questionBank].sort(() => Math.random() - 0.5);
+      activeQuestions = shuffled.slice(0, 5);
+
+      const container = document.getElementById('quizContainer');
+      container.innerHTML = activeQuestions.map((q, i) => `
+        <div class="quiz-q">
+          <div class="q-text">Q${i+1}. ${q.text}</div>
+          <div class="quiz-opts">
+            ${q.opts.map(opt => `
+              <label class="quiz-opt">
+                <input type="radio" name="aq${i}" value="${opt}"> ${opt}
+              </label>`).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.quiz-opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const name = opt.querySelector('input').name;
+          container.querySelectorAll(`[name="${name}"]`).forEach(r => r.closest('.quiz-opt').classList.remove('selected'));
+          opt.classList.add('selected');
+        });
+      });
+    }
+
+    loadRandomQuestions();
+
+    function submitForm() {
+      let allAnswered = true;
+      activeQuestions.forEach((q, i) => {
+        if(!document.querySelector(`[name="aq${i}"]:checked`)) allAnswered = false;
+      });
+      if(!allAnswered){ document.getElementById('quizErr').style.display='block'; return; }
+
+      const score = activeQuestions.filter((q, i) => {
+        const ans = document.querySelector(`[name="aq${i}"]:checked`);
+        return ans && ans.value === q.correct;
+      }).length;
+
+      const data={ stream:selectedStream, core1:cores[1], core2:cores[2], core3:cores[3], goal:selectedGoal, quiz_score:score, type:'12th' };
+      sessionStorage.setItem('predictionData', JSON.stringify(data));
+      window.location.href='/result';
+    }
+
+    // Stars
+    const canvas=document.getElementById('stars'),ctx=canvas.getContext('2d');
+    function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+    resize();window.addEventListener('resize',resize);
+    const stars=Array.from({length:150},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.2,a:Math.random(),s:0.0003+Math.random()*0.0005}));
+    (function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{s.a+=s.s;if(s.a>1)s.a=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(80,120,210,${s.a * 0.5})`;ctx.fill();});requestAnimationFrame(draw);})();
+  </script>
+</body>
+</html>

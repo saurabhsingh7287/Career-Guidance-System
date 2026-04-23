@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Tracker — Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#f0f4ff; --glass:rgba(255,255,255,0.88);
+      --primary:#4f8ef7; --violet:#8b5cf6; --gold:#c2780a;
+      --green:#10b981; --pink:#ec4899; --orange:#f97316;
+      --text:#0f172a; --muted:#64748b; --border:rgba(59,125,232,0.22);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Nunito',sans-serif; min-height:100vh; overflow-x:hidden; }
+    canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+    .orb { position:fixed; border-radius:50%; filter:blur(120px); pointer-events:none; z-index:0; }
+    .orb-1 { width:500px; height:500px; background:rgba(79,142,247,0.09); top:-100px; right:-100px; }
+    .orb-2 { width:400px; height:400px; background:rgba(139,92,246,0.07); bottom:50px; left:-150px; }
+
+    /* NAV */
+    nav { position:sticky; top:0; z-index:200; display:flex; justify-content:space-between; align-items:center; padding:16px 60px; background:rgba(240,244,255,0.97); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); }
+    .logo { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:2px; color:var(--text); text-decoration:none; }
+    .logo span { color:var(--gold); }
+    .nav-links { display:flex; gap:24px; list-style:none; align-items:center; }
+    .nav-links a { color:var(--muted); text-decoration:none; font-size:0.88rem; font-weight:700; transition:color .3s; }
+    .nav-links a:hover, .nav-links a.active { color:var(--primary); }
+
+    /* HERO */
+    .page-hero { position:relative; z-index:1; padding:50px 60px 32px; }
+    .hero-tag { display:inline-flex; align-items:center; gap:8px; background:rgba(79,142,247,0.1); border:1px solid rgba(79,142,247,0.3); color:var(--primary); padding:5px 14px; border-radius:50px; font-size:0.75rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:14px; }
+    .page-hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.2rem,4.5vw,3.8rem); letter-spacing:2px; line-height:1; }
+    .page-hero h1 .grad { background:linear-gradient(90deg,var(--primary),var(--violet)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .page-hero p { color:var(--muted); font-size:0.92rem; margin-top:10px; max-width:540px; line-height:1.7; }
+
+    /* FILTER BAR */
+    .filter-bar { position:relative; z-index:10; padding:0 60px 28px; display:flex; gap:8px; flex-wrap:wrap; }
+    .fbtn {
+      padding:9px 20px; border-radius:50px; font-size:0.82rem; font-weight:700;
+      border:1.5px solid var(--border); background:rgba(240,244,255,0.88); color:var(--muted);
+      cursor:pointer; font-family:'Nunito',sans-serif; transition:all .25s;
+      position:relative; z-index:10;
+    }
+    .fbtn:hover { border-color:rgba(79,142,247,0.5); color:var(--text); }
+    .fbtn.on { color:#fff; border-color:transparent; }
+    .fbtn[data-c="all"].on    { background:linear-gradient(135deg,var(--primary),var(--violet)); }
+    .fbtn[data-c="engg"].on   { background:linear-gradient(135deg,#4f8ef7,#0ea5e9); }
+    .fbtn[data-c="medical"].on{ background:linear-gradient(135deg,var(--green),#0d9488); }
+    .fbtn[data-c="law"].on    { background:linear-gradient(135deg,var(--violet),var(--pink)); }
+    .fbtn[data-c="mgmt"].on   { background:linear-gradient(135deg,var(--gold),var(--orange)); }
+    .fbtn[data-c="design"].on { background:linear-gradient(135deg,var(--pink),var(--orange)); }
+    .fbtn[data-c="commerce"].on{ background:linear-gradient(135deg,var(--green),#0891b2); }
+
+    /* CONTENT */
+    main { position:relative; z-index:1; padding:0 60px 80px; display:flex; flex-direction:column; gap:28px; }
+
+    /* EXAM CARD */
+    .ecard { background:var(--glass); border:1px solid var(--border); border-radius:20px; overflow:hidden; backdrop-filter:blur(14px); }
+    .ecard-head { display:flex; align-items:center; gap:18px; padding:22px 26px 18px; border-bottom:1px solid var(--border); }
+    .eicon { width:50px; height:50px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+    .ename { font-family:'Bebas Neue',sans-serif; font-size:1.45rem; letter-spacing:1px; }
+    .efull { color:var(--muted); font-size:0.78rem; margin-top:2px; }
+    .ebadges { margin-left:auto; display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-end; }
+    .badge { padding:3px 11px; border-radius:50px; font-size:0.7rem; font-weight:700; }
+
+    /* TABS */
+    .etabs { display:flex; background:rgba(240,244,255,0.5); border-bottom:1px solid var(--border); }
+    .etab {
+      padding:11px 22px; font-size:0.82rem; font-weight:700; cursor:pointer;
+      color:var(--muted); border:none; background:transparent;
+      border-bottom:2px solid transparent; transition:all .2s;
+      font-family:'Nunito',sans-serif;
+    }
+    .etab:hover { color:var(--text); }
+    .etab.on { color:var(--text); border-bottom-color:var(--primary); background:rgba(79,142,247,0.05); }
+
+    .epanel { display:none; padding:22px 26px; }
+    .epanel.on { display:block; }
+
+    /* SYLLABUS */
+    .sub-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
+    .sub-block { background:rgba(0,0,0,0.04); border:1px solid var(--border); border-radius:12px; padding:14px; }
+    .sub-name { font-size:0.83rem; font-weight:800; margin-bottom:9px; }
+    .topic-list { list-style:none; display:flex; flex-direction:column; gap:5px; }
+    .topic-list li { font-size:0.76rem; color:var(--muted); display:flex; gap:6px; line-height:1.4; }
+    .topic-list li::before { content:'›'; color:var(--primary); font-weight:800; flex-shrink:0; }
+    .pattern-note { margin-top:12px; padding:10px 14px; border-radius:10px; font-size:0.79rem; line-height:1.55; }
+
+    /* CUTOFFS */
+    .ctable { width:100%; border-collapse:collapse; }
+    .ctable th { text-align:left; font-size:0.7rem; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); padding:9px 12px; border-bottom:1px solid var(--border); }
+    .ctable td { padding:11px 12px; font-size:0.84rem; border-bottom:1px solid rgba(79,142,247,0.07); }
+    .ctable tr:last-child td { border-bottom:none; }
+    .ctable tr:hover td { background:rgba(79,142,247,0.04); }
+    .rv { font-weight:800; }
+
+    /* TIPS */
+    .tips-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
+    .tip { background:rgba(0,0,0,0.04); border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; gap:12px; }
+    .tip-ico { font-size:1.35rem; flex-shrink:0; }
+    .tip-title { font-size:0.83rem; font-weight:800; margin-bottom:4px; }
+    .tip-text { font-size:0.76rem; color:var(--muted); line-height:1.55; }
+
+    /* WEIGHT BARS */
+    .wbar-wrap { margin-bottom:16px; }
+    .wbar-label { font-size:0.75rem; font-weight:700; color:var(--muted); letter-spacing:.5px; text-transform:uppercase; margin-bottom:10px; }
+    .wbar-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .wbar-name { font-size:0.78rem; font-weight:700; width:160px; flex-shrink:0; }
+    .wbar-track { flex:1; height:7px; background:rgba(0,0,0,0.06); border-radius:6px; overflow:hidden; }
+    .wbar-fill { height:100%; border-radius:6px; }
+    .wbar-pct { font-size:0.73rem; font-weight:700; width:34px; text-align:right; flex-shrink:0; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .ecard { animation:fadeUp .35s ease both; }
+
+    @media (max-width:768px) {
+      nav, .page-hero, .filter-bar, main { padding-left:18px; padding-right:18px; }
+      .ecard-head { flex-wrap:wrap; }
+      .ebadges { margin-left:0; }
+      .etab { padding:10px 14px; font-size:0.76rem; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <a class="logo" href="/">Career<span>.</span>learning</a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/collage">collages</a></li>
+    <li><a href="/exam-tracker" class="active">📅 Exam Tracker</a></li>
+    <li><a href="/cutoff">🎯 Cutoff Predictor</a></li>
+    <li><a href="/chatbot">💬 CareerBot</a></li>
+    <li><a href="/logout">Logout</a></li>
+  </ul>
+</nav>
+
+<div class="page-hero">
+  <div class="hero-tag">📚 Exam Tracker</div>
+  <h1>ENTRANCE EXAM<br><span class="grad">GUIDE 2025–26</span></h1>
+  <p>Complete syllabus, previous year cutoffs, and expert preparation tips for every major entrance exam — all in one place.</p>
+</div>
+
+<div class="filter-bar">
+  <button class="fbtn on"  data-c="all"     onclick="filter(this)">All Exams</button>
+  <button class="fbtn"     data-c="engg"    onclick="filter(this)">🔧 Engineering</button>
+  <button class="fbtn"     data-c="medical" onclick="filter(this)">🩺 Medical</button>
+  <button class="fbtn"     data-c="law"     onclick="filter(this)">⚖️ Law</button>
+  <button class="fbtn"     data-c="mgmt"    onclick="filter(this)">💼 Management</button>
+  <button class="fbtn"     data-c="design"  onclick="filter(this)">🎨 Design</button>
+  <button class="fbtn"     data-c="commerce"onclick="filter(this)">📊 Commerce</button>
+</div>
+
+<main id="main">
+
+<!-- ══════════════════ JEE MAIN ══════════════════ -->
+<div class="ecard" data-c="engg">
+  <div class="ecard-head">
+    <div class="eicon" style="background:linear-gradient(135deg,rgba(79,142,247,0.25),rgba(139,92,246,0.2));border:1px solid rgba(79,142,247,0.3)">🔧</div>
+    <div>
+      <div class="ename">JEE MAIN</div>
+      <div class="efull">Joint Entrance Examination — Main &nbsp;|&nbsp; Conducted by NTA</div>
+    </div>
+    <div class="ebadges">
+      <span class="badge" style="background:rgba(79,142,247,0.15);color:var(--primary);border:1px solid rgba(79,142,247,0.3)">Engineering</span>
+      <span class="badge" style="background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25)">NITs / IIITs</span>
+      <span class="badge" style="background:rgba(245,158,11,0.12);color:var(--gold);border:1px solid rgba(245,158,11,0.25)">NTA</span>
+    </div>
+  </div>
+  <div class="etabs">
+    <button class="etab on"  onclick="tab(this,'jm-syl')">📚 Syllabus</button>
+    <button class="etab"     onclick="tab(this,'jm-cut')">🎯 Cutoffs</button>
+    <button class="etab"     onclick="tab(this,'jm-tip')">💡 Tips</button>
+  </div>
+  <div id="jm-syl" class="epanel on">
+    <div class="sub-grid">
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--primary)">⚛️ Physics (30 Qs)</div>
+        <ul class="topic-list">
+          <li>Mechanics & Laws of Motion</li><li>Thermodynamics</li>
+          <li>Electrostatics & Current Electricity</li><li>Magnetism & EMI</li>
+          <li>Ray & Wave Optics</li><li>Modern Physics & Semiconductors</li>
+        </ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--green)">🧪 Chemistry (30 Qs)</div>
+        <ul class="topic-list">
+          <li>Mole Concept & Thermodynamics</li><li>Chemical Equilibrium</li>
+          <li>Electrochemistry & Kinetics</li><li>Organic Chemistry (Reactions)</li>
+          <li>Inorganic — Periodic Table & Bonding</li><li>Biomolecules & Polymers</li>
+        </ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--violet)">📐 Mathematics (30 Qs)</div>
+        <ul class="topic-list">
+          <li>Algebra — Complex Numbers, Matrices</li><li>Coordinate Geometry</li>
+          <li>Calculus — Limits, Derivatives, Integrals</li><li>3D Geometry & Vectors</li>
+          <li>Probability & Statistics</li><li>Trigonometry & Functions</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pattern-note" style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);color:var(--gold)">
+      ⚠️ <strong>Exam Pattern:</strong> 90 questions total — attempt 75. Section A: MCQ (+4/–1). Section B: Numerical (+4, no negative). Duration: 3 hours. Best of 2 sessions counted.
+    </div>
+  </div>
+  <div id="jm-cut" class="epanel">
+    <table class="ctable">
+      <thead><tr><th>Category</th><th>2024 Cutoff Percentile</th><th>2023 Cutoff</th><th>2022 Cutoff</th></tr></thead>
+      <tbody>
+        <tr><td>General (CRL)</td><td class="rv" style="color:var(--primary)">89.7</td><td>90.8</td><td>88.4</td></tr>
+        <tr><td>OBC-NCL</td><td class="rv" style="color:var(--primary)">73.6</td><td>75.6</td><td>67.0</td></tr>
+        <tr><td>SC</td><td class="rv" style="color:var(--primary)">52.0</td><td>54.0</td><td>43.0</td></tr>
+        <tr><td>ST</td><td class="rv" style="color:var(--primary)">37.2</td><td>44.0</td><td>26.7</td></tr>
+        <tr><td>EWS</td><td class="rv" style="color:var(--primary)">75.0</td><td>75.0</td><td>63.1</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:10px;font-size:0.76rem;color:var(--muted)">* Minimum percentile required to qualify for JEE Advanced eligibility (top 2.5 lakh seats).</div>
+  </div>
+  <div id="jm-tip" class="epanel">
+    <div class="wbar-wrap">
+      <div class="wbar-label">High Weightage Chapters</div>
+      <div class="wbar-row"><div class="wbar-name">Mechanics (Physics)</div><div class="wbar-track"><div class="wbar-fill" style="width:30%;background:var(--primary)"></div></div><div class="wbar-pct" style="color:var(--primary)">30%</div></div>
+      <div class="wbar-row"><div class="wbar-name">Organic Chemistry</div><div class="wbar-track"><div class="wbar-fill" style="width:35%;background:var(--green)"></div></div><div class="wbar-pct" style="color:var(--green)">35%</div></div>
+      <div class="wbar-row"><div class="wbar-name">Calculus (Maths)</div><div class="wbar-track"><div class="wbar-fill" style="width:25%;background:var(--violet)"></div></div><div class="wbar-pct" style="color:var(--violet)">25%</div></div>
+      <div class="wbar-row"><div class="wbar-name">Coordinate Geometry</div><div class="wbar-track"><div class="wbar-fill" style="width:20%;background:var(--violet)"></div></div><div class="wbar-pct" style="color:var(--violet)">20%</div></div>
+    </div>
+    <div class="tips-grid">
+      <div class="tip"><div class="tip-ico">📆</div><div><div class="tip-title">Start 6 Months Early</div><div class="tip-text">Finish NCERT first, then H.C. Verma, JD Lee, and RD Sharma. 6–8 hours daily study with subject rotation.</div></div></div>
+      <div class="tip"><div class="tip-ico">📝</div><div><div class="tip-title">Mock Tests Every Week</div><div class="tip-text">Full mock every Sunday. Analyse wrong answers — most students lose 20–30 marks due to careless errors, not lack of knowledge.</div></div></div>
+      <div class="tip"><div class="tip-ico">🔢</div><div><div class="tip-title">Numerical = Free Marks</div><div class="tip-text">Section B has no negative marking. Always attempt all 10 numerical questions — rough estimates can also score full marks.</div></div></div>
+      <div class="tip"><div class="tip-ico">⚡</div><div><div class="tip-title">Time Management</div><div class="tip-text">Target 2 min/question. Ideal split: Physics 60 min, Chemistry 55 min, Maths 65 min. Skip uncertain MCQs (–1 penalty).</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ JEE ADVANCED ══════════════════ -->
+<div class="ecard" data-c="engg">
+  <div class="ecard-head">
+    <div class="eicon" style="background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(249,115,22,0.2));border:1px solid rgba(245,158,11,0.3)">🏛️</div>
+    <div>
+      <div class="ename">JEE ADVANCED</div>
+      <div class="efull">Joint Entrance Examination — Advanced &nbsp;|&nbsp; IIT Admissions Only</div>
+    </div>
+    <div class="ebadges">
+      <span class="badge" style="background:rgba(245,158,11,0.15);color:var(--gold);border:1px solid rgba(245,158,11,0.3)">IITs Only</span>
+      <span class="badge" style="background:rgba(245,158,11,0.12);color:var(--gold);border:1px solid rgba(245,158,11,0.25)">IIT Organised</span>
+    </div>
+  </div>
+  <div class="etabs">
+    <button class="etab on" onclick="tab(this,'ja-syl')">📚 Syllabus</button>
+    <button class="etab"    onclick="tab(this,'ja-cut')">🎯 Cutoffs</button>
+    <button class="etab"    onclick="tab(this,'ja-tip')">💡 Tips</button>
+  </div>
+  <div id="ja-syl" class="epanel on">
+    <div class="sub-grid">
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--primary)">⚛️ Physics</div>
+        <ul class="topic-list">
+          <li>General Physics & Measurement</li><li>Mechanics — Rotational, SHM, Fluids</li>
+          <li>Thermal Physics</li><li>Electricity & Magnetism</li>
+          <li>Optics — Geometric & Physical</li><li>Modern Physics — Atomic, Nuclear</li>
+        </ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--green)">🧪 Chemistry</div>
+        <ul class="topic-list">
+          <li>States of Matter & Atomic Structure</li><li>Energetics & Chemical Equilibrium</li>
+          <li>Electrochemistry</li><li>Organic Chemistry — Mechanisms</li>
+          <li>Inorganic — Transition Metals, d-block</li><li>Surface Chemistry</li>
+        </ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--violet)">📐 Mathematics</div>
+        <ul class="topic-list">
+          <li>Algebra & Complex Numbers</li><li>Matrices & Determinants</li>
+          <li>Differential & Integral Calculus</li><li>Vectors & 3D Geometry</li>
+          <li>Probability & Combinatorics</li><li>Trigonometry & Inverse Trig</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pattern-note" style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);color:var(--gold)">
+      ⚠️ <strong>Pattern:</strong> 2 papers × 3 hours. Complex types: single correct, multiple correct (partial marking), numerical, matrix match. Pattern changes every year — no fixed format.
+    </div>
+  </div>
+  <div id="ja-cut" class="epanel">
+    <table class="ctable">
+      <thead><tr><th>Category</th><th>2024 Cutoff (Marks/360)</th><th>2023</th><th>2022</th></tr></thead>
+      <tbody>
+        <tr><td>General (CRL)</td><td class="rv" style="color:var(--gold)">109</td><td>90</td><td>88</td></tr>
+        <tr><td>OBC-NCL</td><td class="rv" style="color:var(--gold)">98</td><td>81</td><td>79</td></tr>
+        <tr><td>SC</td><td class="rv" style="color:var(--gold)">54</td><td>45</td><td>44</td></tr>
+        <tr><td>ST</td><td class="rv" style="color:var(--gold)">54</td><td>45</td><td>44</td></tr>
+        <tr><td>EWS</td><td class="rv" style="color:var(--gold)">98</td><td>81</td><td>79</td></tr>
+        <tr><td>Total Qualified (2024)</td><td colspan="3" style="color:var(--muted)">~48,248 candidates qualified out of 1.8 lakh appeared</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="ja-tip" class="epanel">
+    <div class="tips-grid">
+      <div class="tip"><div class="tip-ico">📖</div><div><div class="tip-title">Concept Over Formula</div><div class="tip-text">JEE Advanced is conceptual. Understand derivations and the "why" behind every concept — memorising formulas alone won't work.</div></div></div>
+      <div class="tip"><div class="tip-ico">🧩</div><div><div class="tip-title">Careful with Multi-Correct</div><div class="tip-text">Selecting a wrong option gives negative marks. If even one option is uncertain, it's safer to skip the entire question.</div></div></div>
+      <div class="tip"><div class="tip-ico">📊</div><div><div class="tip-title">Solve 15 Years PYQs</div><div class="tip-text">Previous Year Questions from 2008–2024 are the best resource. JEE Advanced often tests similar concepts in different disguises.</div></div></div>
+      <div class="tip"><div class="tip-ico">🧠</div><div><div class="tip-title">HC Verma + Irodov</div><div class="tip-text">For Physics, HC Verma builds concepts and Irodov builds problem-solving. For Chemistry, JD Lee + Narendra Awasthi for PYQ practice.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ NEET UG ══════════════════ -->
+<div class="ecard" data-c="medical">
+  <div class="ecard-head">
+    <div class="eicon" style="background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(79,142,247,0.2));border:1px solid rgba(16,185,129,0.3)">🩺</div>
+    <div>
+      <div class="ename">NEET UG</div>
+      <div class="efull">National Eligibility cum Entrance Test — Undergraduate &nbsp;|&nbsp; Conducted by NTA</div>
+    </div>
+    <div class="ebadges">
+      <span class="badge" style="background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25)">MBBS / BDS</span>
+      <span class="badge" style="background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25)">Pen & Paper</span>
+      <span class="badge" style="background:rgba(79,142,247,0.12);color:var(--primary);border:1px solid rgba(79,142,247,0.25)">Single Day</span>
+    </div>
+  </div>
+  <div class="etabs">
+    <button class="etab on" onclick="tab(this,'neet-syl')">📚 Syllabus</button>
+    <button class="etab"    onclick="tab(this,'neet-cut')">🎯 Cutoffs</button>
+    <button class="etab"    onclick="tab(this,'neet-tip')">💡 Tips</button>
+  </div>
+  <div id="neet-syl" class="epanel on">
+    <div class="sub-grid">
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--primary)">⚛️ Physics (50 Qs)</div>
+        <ul class="topic-list">
+          <li>Physical World & Measurement</li><li>Laws of Motion & Work-Energy</li>
+          <li>Thermodynamics</li><li>Current Electricity & Magnetism</li>
+          <li>Dual Nature of Matter</li><li>Atoms, Nuclei & Semiconductors</li>
+        </ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--green)">🧪 Chemistry (50 Qs)</div>
+        <ul class="topic-list">
+          <li>Basic Concepts & Atomic Structure</li><li>Chemical Bonding & States of Matter</li>
+          <li>Thermodynamics & Equilibrium</li><li>Redox Reactions & Electrochemistry</li>
+          <li>Organic Chemistry — Basics & Reactions</li><li>Biomolecules & Polymers</li>
+        </ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--orange)">🌿 Botany (50 Qs)</div>
+        <ul class="topic-list">
+          <li>Cell Structure & Cell Division</li><li>Plant Physiology — Photosynthesis, Respiration</li>
+          <li>Reproduction in Plants</li><li>Genetics & Evolution</li>
+          <li>Biodiversity & Conservation</li>
+        </ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--pink)">🧬 Zoology (50 Qs)</div>
+        <ul class="topic-list">
+          <li>Animal Kingdom Classification</li><li>Human Physiology — all systems</li>
+          <li>Reproduction in Animals</li><li>Biotechnology & Applications</li>
+          <li>Human Health & Disease</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pattern-note" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);color:var(--green)">
+      ✅ <strong>Pattern:</strong> 200 questions — attempt 180. Section A: 35 compulsory per subject. Section B: 15 Qs, attempt any 10. +4 correct / –1 wrong. OMR-based (pen & paper).
+    </div>
+  </div>
+  <div id="neet-cut" class="epanel">
+    <table class="ctable">
+      <thead><tr><th>Category / collage</th><th>2024 Score Cutoff</th><th>2023 Cutoff</th><th>2022 Cutoff</th></tr></thead>
+      <tbody>
+        <tr><td>General (qualifying)</td><td class="rv" style="color:var(--green)">164/720</td><td>137/720</td><td>117/720</td></tr>
+        <tr><td>OBC / SC / ST</td><td class="rv" style="color:var(--green)">129/720</td><td>107/720</td><td>93/720</td></tr>
+        <tr><td>AIIMS New Delhi (est.)</td><td class="rv" style="color:var(--green)">690+</td><td>685+</td><td>680+</td></tr>
+        <tr><td>Govt. MBBS — Top collages</td><td class="rv" style="color:var(--green)">600–650</td><td>580–630</td><td>560–610</td></tr>
+        <tr><td>Govt. MBBS — State Quota</td><td class="rv" style="color:var(--green)">500–580</td><td>480–560</td><td>460–540</td></tr>
+        <tr><td>Private MBBS collages</td><td class="rv" style="color:var(--green)">400–500</td><td>380–480</td><td>360–460</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="neet-tip" class="epanel">
+    <div class="wbar-wrap">
+      <div class="wbar-label">Subject-wise Score Importance</div>
+      <div class="wbar-row"><div class="wbar-name">Biology (Botany + Zoo)</div><div class="wbar-track"><div class="wbar-fill" style="width:50%;background:var(--green)"></div></div><div class="wbar-pct" style="color:var(--green)">360/720</div></div>
+      <div class="wbar-row"><div class="wbar-name">Chemistry</div><div class="wbar-track"><div class="wbar-fill" style="width:25%;background:var(--primary)"></div></div><div class="wbar-pct" style="color:var(--primary)">180/720</div></div>
+      <div class="wbar-row"><div class="wbar-name">Physics</div><div class="wbar-track"><div class="wbar-fill" style="width:25%;background:var(--orange)"></div></div><div class="wbar-pct" style="color:var(--orange)">180/720</div></div>
+    </div>
+    <div class="tips-grid">
+      <div class="tip"><div class="tip-ico">📗</div><div><div class="tip-title">NCERT is Everything</div><div class="tip-text">90%+ NEET questions come directly from NCERT Biology. Read every line, every table, every diagram caption — word for word.</div></div></div>
+      <div class="tip"><div class="tip-ico">🔁</div><div><div class="tip-title">Revise 3 Times Minimum</div><div class="tip-text">First read to understand. Second read to memorise. Third read to retain. Use flashcards for taxonomy, organ systems, and hormones.</div></div></div>
+      <div class="tip"><div class="tip-ico">🧬</div><div><div class="tip-title">Biology = 50% of Exam</div><div class="tip-text">Score 340+/360 in Bio — it can compensate for average Physics/Chemistry. Prioritise Biology with 60% of your study time.</div></div></div>
+      <div class="tip"><div class="tip-ico">📋</div><div><div class="tip-title">Practice OMR Sheets</div><div class="tip-text">NEET is pen-and-paper. Practice carefully filling OMR bubbles under time pressure — wrong bubbling costs 4 marks per question.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CLAT ══════════════════ -->
+<div class="ecard" data-c="law">
+  <div class="ecard-head">
+    <div class="eicon" style="background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(236,72,153,0.2));border:1px solid rgba(139,92,246,0.3)">⚖️</div>
+    <div>
+      <div class="ename">CLAT</div>
+      <div class="efull">Common Law Admission Test &nbsp;|&nbsp; NLU Consortium &nbsp;|&nbsp; All 25 NLUs</div>
+    </div>
+    <div class="ebadges">
+      <span class="badge" style="background:rgba(139,92,246,0.15);color:var(--violet);border:1px solid rgba(139,92,246,0.3)">Law</span>
+      <span class="badge" style="background:rgba(139,92,246,0.12);color:var(--violet);border:1px solid rgba(139,92,246,0.25)">25 NLUs</span>
+      <span class="badge" style="background:rgba(236,72,153,0.12);color:var(--pink);border:1px solid rgba(236,72,153,0.25)">Passage-Based</span>
+    </div>
+  </div>
+  <div class="etabs">
+    <button class="etab on" onclick="tab(this,'clat-syl')">📚 Syllabus</button>
+    <button class="etab"    onclick="tab(this,'clat-cut')">🎯 Cutoffs</button>
+    <button class="etab"    onclick="tab(this,'clat-tip')">💡 Tips</button>
+  </div>
+  <div id="clat-syl" class="epanel on">
+    <div class="sub-grid">
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--primary)">📝 English (22–26 Qs)</div>
+        <ul class="topic-list"><li>Reading Comprehension passages</li><li>Vocabulary in context</li><li>Grammar & sentence correction</li><li>Inference & critical reading</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--green)">🌍 GK & Current Affairs (28–32 Qs)</div>
+        <ul class="topic-list"><li>Current events (last 12 months)</li><li>Static GK — Polity, History, Geography</li><li>Supreme Court judgements & legal news</li><li>International affairs</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--violet)">⚖️ Legal Reasoning (35–39 Qs)</div>
+        <ul class="topic-list"><li>Legal propositions + fact application</li><li>Principles of tort, crime, contract</li><li>Constitutional law scenarios</li><li>No prior legal knowledge needed</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--gold)">🧠 Logical Reasoning (28–32 Qs)</div>
+        <ul class="topic-list"><li>Argument analysis</li><li>Cause & effect reasoning</li><li>Strengthening / weakening arguments</li><li>Critical reasoning passages</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--pink)">🔢 Quantitative Techniques (13–17 Qs)</div>
+        <ul class="topic-list"><li>Basic arithmetic (Class 10 level)</li><li>Data interpretation — graphs & tables</li><li>Ratio, percentages, averages</li></ul>
+      </div>
+    </div>
+    <div class="pattern-note" style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);color:var(--violet)">
+      ⚠️ <strong>Pattern:</strong> 120 questions, 2 hours. All questions are passage-based. +1 for correct, –0.25 for wrong. No section is compulsory separately.
+    </div>
+  </div>
+  <div id="clat-cut" class="epanel">
+    <table class="ctable">
+      <thead><tr><th>NLU</th><th>2024 Score (Gen)</th><th>2023 Score</th><th>Approx CLAT Rank</th></tr></thead>
+      <tbody>
+        <tr><td>NLSIU Bangalore</td><td class="rv" style="color:var(--violet)">106+</td><td>108+</td><td>Top 100</td></tr>
+        <tr><td>NALSAR Hyderabad</td><td class="rv" style="color:var(--violet)">102+</td><td>104+</td><td>Top 200</td></tr>
+        <tr><td>NLIU Bhopal</td><td class="rv" style="color:var(--violet)">99+</td><td>101+</td><td>Top 350</td></tr>
+        <tr><td>WBNUJS Kolkata</td><td class="rv" style="color:var(--violet)">97+</td><td>99+</td><td>Top 500</td></tr>
+        <tr><td>NLU Jodhpur</td><td class="rv" style="color:var(--violet)">95+</td><td>97+</td><td>Top 650</td></tr>
+        <tr><td>HNLU Raipur / GNLU Gandhinagar</td><td class="rv" style="color:var(--violet)">90–94</td><td>92–96</td><td>Top 1,200</td></tr>
+        <tr><td>NLU Delhi (AILET — separate exam)</td><td class="rv" style="color:var(--pink)">AILET only</td><td>AILET only</td><td>Top 80 in AILET</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="clat-tip" class="epanel">
+    <div class="tips-grid">
+      <div class="tip"><div class="tip-ico">📰</div><div><div class="tip-title">Read Newspaper Daily</div><div class="tip-text">The Hindu or Indian Express every day. GK + Current Affairs carry 28–32 marks. Note important SC judgements and constitutional amendments.</div></div></div>
+      <div class="tip"><div class="tip-ico">📜</div><div><div class="tip-title">Legal Reasoning = Highest Weight</div><div class="tip-text">35–39 questions — the biggest section. No prior law knowledge needed. Simply apply the given principle logically to the fact situation.</div></div></div>
+      <div class="tip"><div class="tip-ico">⏱️</div><div><div class="tip-title">Reading Speed is Key</div><div class="tip-text">CLAT is entirely passage-based. Practice reading 400-word passages in under 3 minutes. Active reading (underline key points) is essential.</div></div></div>
+      <div class="tip"><div class="tip-ico">🔢</div><div><div class="tip-title">Never Skip Quant</div><div class="tip-text">Only Class 10-level Maths. Worth 13–17 marks — easy to score. Practise percentages, ratios, and data interpretation daily.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CAT ══════════════════ -->
+<div class="ecard" data-c="mgmt">
+  <div class="ecard-head">
+    <div class="eicon" style="background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(249,115,22,0.2));border:1px solid rgba(245,158,11,0.3)">💼</div>
+    <div>
+      <div class="ename">CAT</div>
+      <div class="efull">Common Admission Test &nbsp;|&nbsp; IIM Admissions &nbsp;|&nbsp; Organised by IIMs on rotation</div>
+    </div>
+    <div class="ebadges">
+      <span class="badge" style="background:rgba(245,158,11,0.15);color:var(--gold);border:1px solid rgba(245,158,11,0.3)">MBA</span>
+      <span class="badge" style="background:rgba(245,158,11,0.12);color:var(--gold);border:1px solid rgba(245,158,11,0.25)">All 20 IIMs</span>
+    </div>
+  </div>
+  <div class="etabs">
+    <button class="etab on" onclick="tab(this,'cat-syl')">📚 Syllabus</button>
+    <button class="etab"    onclick="tab(this,'cat-cut')">🎯 Cutoffs</button>
+    <button class="etab"    onclick="tab(this,'cat-tip')">💡 Tips</button>
+  </div>
+  <div id="cat-syl" class="epanel on">
+    <div class="sub-grid">
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--primary)">📖 VARC — 40 min (24 Qs)</div>
+        <ul class="topic-list"><li>Reading Comprehension (3–4 passages)</li><li>Para-jumbles (sentence ordering)</li><li>Para Summary</li><li>Odd Sentence Out</li><li>Critical Reasoning</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--green)">🧩 DILR — 40 min (20 Qs)</div>
+        <ul class="topic-list"><li>Data Interpretation — Bar, Pie, Tables</li><li>Logical Reasoning — Arrangements</li><li>Set-based problems</li><li>Games, Tournaments, Selections</li><li>Schedules & Routes</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--gold)">📐 QA — 40 min (22 Qs)</div>
+        <ul class="topic-list"><li>Arithmetic — Ratio, Percentage, P&L</li><li>Algebra — Equations, Functions</li><li>Geometry & Mensuration</li><li>Number System</li><li>P&C, Probability</li></ul>
+      </div>
+    </div>
+    <div class="pattern-note" style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);color:var(--gold)">
+      ⚠️ <strong>Pattern:</strong> 66 questions, 120 minutes. 3 sections, 40 min each (cannot switch). MCQ: +3/–1. TITA (no negative): +3. Sectional percentile is also used for IIM shortlisting.
+    </div>
+  </div>
+  <div id="cat-cut" class="epanel">
+    <table class="ctable">
+      <thead><tr><th>IIM</th><th>2024 Overall Cutoff %ile</th><th>2023 Cutoff</th><th>Sectional Cutoff</th></tr></thead>
+      <tbody>
+        <tr><td>IIM Ahmedabad</td><td class="rv" style="color:var(--gold)">99+</td><td>99+</td><td>~85 each section</td></tr>
+        <tr><td>IIM Bangalore</td><td class="rv" style="color:var(--gold)">99+</td><td>99+</td><td>~85 each section</td></tr>
+        <tr><td>IIM Calcutta</td><td class="rv" style="color:var(--gold)">98+</td><td>98+</td><td>~80 each section</td></tr>
+        <tr><td>IIM Lucknow</td><td class="rv" style="color:var(--gold)">97+</td><td>97+</td><td>~75 each section</td></tr>
+        <tr><td>IIM Kozhikode / Indore</td><td class="rv" style="color:var(--gold)">95–96+</td><td>95–96+</td><td>~72 each section</td></tr>
+        <tr><td>FMS Delhi (non-IIM)</td><td class="rv" style="color:var(--gold)">98+</td><td>98+</td><td>~80 each section</td></tr>
+        <tr><td>New IIMs (Bodh Gaya etc.)</td><td class="rv" style="color:var(--gold)">85–90+</td><td>85–90+</td><td>~70 each section</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="cat-tip" class="epanel">
+    <div class="tips-grid">
+      <div class="tip"><div class="tip-ico">📚</div><div><div class="tip-title">VARC: Read Voraciously</div><div class="tip-text">Read editorials from The Hindu, The Economist, and HBR. RC passages in CAT are complex — reading speed and comprehension is the key differentiator.</div></div></div>
+      <div class="tip"><div class="tip-ico">🧩</div><div><div class="tip-title">DILR: Identify Set Type Fast</div><div class="tip-text">First 2 minutes: scan all sets, pick the 2 easiest. Don't get stuck on a tough set — a wrong choice wastes 20 minutes and kills your percentile.</div></div></div>
+      <div class="tip"><div class="tip-ico">🔢</div><div><div class="tip-title">QA: Shortcuts Over Formulae</div><div class="tip-text">Master approximation and Vedic Maths. 90% of QA can be solved faster with estimation than exact calculation.</div></div></div>
+      <div class="tip"><div class="tip-ico">📊</div><div><div class="tip-title">Sectional Percentile Matters</div><div class="tip-text">IIMs check each section separately. Even a 99 overall percentile won't help if you score below 70 in any single section.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ UCEED + NID DAT ══════════════════ -->
+<div class="ecard" data-c="design">
+  <div class="ecard-head">
+    <div class="eicon" style="background:linear-gradient(135deg,rgba(236,72,153,0.25),rgba(245,158,11,0.2));border:1px solid rgba(236,72,153,0.3)">🎨</div>
+    <div>
+      <div class="ename">UCEED + NID DAT</div>
+      <div class="efull">Design Entrance Exams — IIT B.Des (UCEED) + NID B.Des (NID DAT)</div>
+    </div>
+    <div class="ebadges">
+      <span class="badge" style="background:rgba(236,72,153,0.15);color:var(--pink);border:1px solid rgba(236,72,153,0.3)">B.Design</span>
+      <span class="badge" style="background:rgba(245,158,11,0.12);color:var(--gold);border:1px solid rgba(245,158,11,0.25)">IITs + NID</span>
+    </div>
+  </div>
+  <div class="etabs">
+    <button class="etab on" onclick="tab(this,'des-syl')">📚 Syllabus</button>
+    <button class="etab"    onclick="tab(this,'des-cut')">🎯 Cutoffs</button>
+    <button class="etab"    onclick="tab(this,'des-tip')">💡 Tips</button>
+  </div>
+  <div id="des-syl" class="epanel on">
+    <div class="sub-grid">
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--pink)">UCEED — Part A (Objective)</div>
+        <ul class="topic-list"><li>Visualisation & Spatial Ability</li><li>Observation & Design Sensitivity</li><li>Environmental & Social Awareness</li><li>Analytical & Logical Reasoning</li><li>Language & Creativity</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--orange)">UCEED — Part B (Sketching)</div>
+        <ul class="topic-list"><li>Freehand sketching of objects</li><li>Visual composition & layout</li><li>Perspective & proportions</li><li>Design concept communication</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--violet)">NID DAT — Prelims (Online)</div>
+        <ul class="topic-list"><li>Drawing from memory</li><li>Design thinking problems</li><li>Material & product knowledge</li><li>Colour & visual composition</li><li>Observation-based drawing</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--gold)">NID DAT — Mains (In-person)</div>
+        <ul class="topic-list"><li>Studio creative exercises</li><li>Portfolio presentation</li><li>Group discussion & interview</li><li>3D material handling (models)</li></ul>
+      </div>
+    </div>
+    <div class="pattern-note" style="background:rgba(236,72,153,0.07);border:1px solid rgba(236,72,153,0.2);color:var(--pink)">
+      ✅ <strong>UCEED:</strong> 3 hours CBT — Part A (Objective) + Part B (Sketching submitted online). &nbsp;|&nbsp; <strong>NID DAT:</strong> 2-stage — Online Prelims → In-person Mains + Interview.
+    </div>
+  </div>
+  <div id="des-cut" class="epanel">
+    <table class="ctable">
+      <thead><tr><th>Programme</th><th>2024 Approx Cutoff</th><th>Total Seats</th><th>Competition</th></tr></thead>
+      <tbody>
+        <tr><td>IIT Bombay B.Des (UCEED)</td><td class="rv" style="color:var(--pink)">230+/300</td><td>30 seats</td><td>Extremely High</td></tr>
+        <tr><td>IIT Guwahati B.Des (UCEED)</td><td class="rv" style="color:var(--pink)">200+/300</td><td>20 seats</td><td>Very High</td></tr>
+        <tr><td>IIT Delhi B.Des (UCEED)</td><td class="rv" style="color:var(--pink)">210+/300</td><td>20 seats</td><td>Very High</td></tr>
+        <tr><td>NID Ahmedabad (DAT)</td><td class="rv" style="color:var(--pink)">Top 100 Prelims</td><td>~100 seats</td><td>Very High</td></tr>
+        <tr><td>NID Bengaluru (DAT)</td><td class="rv" style="color:var(--pink)">Top 200 Prelims</td><td>~60 seats</td><td>High</td></tr>
+        <tr><td>NIFT Delhi B.Des (NIFT Exam)</td><td class="rv" style="color:var(--pink)">High score req.</td><td>120 seats</td><td>High</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="des-tip" class="epanel">
+    <div class="tips-grid">
+      <div class="tip"><div class="tip-ico">✏️</div><div><div class="tip-title">Sketch Every Day</div><div class="tip-text">Draw everyday objects — chairs, bottles, phones. Focus on proportions, light/shadow, and confident quick lines. 30 min daily sketching is non-negotiable.</div></div></div>
+      <div class="tip"><div class="tip-ico">👁️</div><div><div class="tip-title">Train Visual Observation</div><div class="tip-text">Notice design in everything — packaging, logos, architecture. UCEED specifically tests how observant you are about the designed world around you.</div></div></div>
+      <div class="tip"><div class="tip-ico">🎨</div><div><div class="tip-title">Build Portfolio Early</div><div class="tip-text">For NID DAT Mains, a strong portfolio is critical. Collect best sketches, models, paintings, and design projects over 6–12 months before applying.</div></div></div>
+      <div class="tip"><div class="tip-ico">🧩</div><div><div class="tip-title">Solve UCEED Past Papers</div><div class="tip-text">UCEED 2018–2024 papers are on the official site. Practice Part A extensively — visual reasoning questions have unique recurring patterns.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CUET UG ══════════════════ -->
+<div class="ecard" data-c="commerce">
+  <div class="ecard-head">
+    <div class="eicon" style="background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(79,142,247,0.2));border:1px solid rgba(16,185,129,0.3)">📊</div>
+    <div>
+      <div class="ename">CUET UG</div>
+      <div class="efull">Common University Entrance Test — Undergraduate &nbsp;|&nbsp; Conducted by NTA &nbsp;|&nbsp; 270+ Universities</div>
+    </div>
+    <div class="ebadges">
+      <span class="badge" style="background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25)">Commerce</span>
+      <span class="badge" style="background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25)">All Streams</span>
+      <span class="badge" style="background:rgba(79,142,247,0.12);color:var(--primary);border:1px solid rgba(79,142,247,0.25)">CBT</span>
+    </div>
+  </div>
+  <div class="etabs">
+    <button class="etab on" onclick="tab(this,'cuet-syl')">📚 Syllabus</button>
+    <button class="etab"    onclick="tab(this,'cuet-cut')">🎯 Cutoffs</button>
+    <button class="etab"    onclick="tab(this,'cuet-tip')">💡 Tips</button>
+  </div>
+  <div id="cuet-syl" class="epanel on">
+    <div class="sub-grid">
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--green)">📒 Accountancy</div>
+        <ul class="topic-list"><li>Financial Statements of Companies</li><li>Partnership Accounts</li><li>Cash Flow Statement</li><li>Ratio Analysis</li><li>Company Accounts — Issue of Shares</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--gold)">📋 Business Studies</div>
+        <ul class="topic-list"><li>Nature & Significance of Management</li><li>Business Finance & Capital</li><li>Marketing Management</li><li>Consumer Protection</li><li>Entrepreneurship Development</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--primary)">📈 Economics</div>
+        <ul class="topic-list"><li>Microeconomics — Demand, Supply</li><li>National Income Accounting</li><li>Money, Banking & Credit</li><li>Balance of Payments</li><li>Government Budget & Fiscal Policy</li></ul>
+      </div>
+      <div class="sub-block">
+        <div class="sub-name" style="color:var(--violet)">📝 English (Language)</div>
+        <ul class="topic-list"><li>Reading Comprehension</li><li>Grammar & Vocabulary</li><li>Fill in the blanks</li><li>Creative Writing (short)</li></ul>
+      </div>
+    </div>
+    <div class="pattern-note" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);color:var(--green)">
+      ✅ <strong>Pattern:</strong> 50 questions per subject — 45 to attempt. 45 minutes per subject. +5 correct / –1 wrong. CBT mode. You can choose up to 6 domain subjects.
+    </div>
+  </div>
+  <div id="cuet-cut" class="epanel">
+    <table class="ctable">
+      <thead><tr><th>collage (DU)</th><th>2024 CUET Score (Gen)</th><th>2023 Score</th><th>Programme</th></tr></thead>
+      <tbody>
+        <tr><td>SRCC Delhi</td><td class="rv" style="color:var(--green)">700+/800</td><td>695+</td><td>B.Com (Hons)</td></tr>
+        <tr><td>Lady Shri Ram (LSR)</td><td class="rv" style="color:var(--green)">690+/800</td><td>685+</td><td>B.Com (Hons)</td></tr>
+        <tr><td>Hindu collage</td><td class="rv" style="color:var(--green)">680+/800</td><td>675+</td><td>B.Com (Hons)</td></tr>
+        <tr><td>Hansraj collage</td><td class="rv" style="color:var(--green)">670+/800</td><td>665+</td><td>B.Com (Hons)</td></tr>
+        <tr><td>Ramjas collage</td><td class="rv" style="color:var(--green)">660+/800</td><td>655+</td><td>B.Com (Hons)</td></tr>
+        <tr><td>St. Stephen's collage</td><td class="rv" style="color:var(--green)">CUET + Interview</td><td>CUET + Interview</td><td>B.A. (Hons) Economics</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="cuet-tip" class="epanel">
+    <div class="tips-grid">
+      <div class="tip"><div class="tip-ico">📗</div><div><div class="tip-title">NCERT is Sufficient</div><div class="tip-text">CUET domain questions are mostly NCERT-based. Thorough NCERT revision + past papers = 90%+ score. No need for extra coaching material.</div></div></div>
+      <div class="tip"><div class="tip-ico">⏱️</div><div><div class="tip-title">Speed is Critical</div><div class="tip-text">45 minutes for 45 questions = 1 min per question. Practice with strict timers. Skip & return strategy works best here.</div></div></div>
+      <div class="tip"><div class="tip-ico">📊</div><div><div class="tip-title">Normalization Effect</div><div class="tip-text">Scores are normalized across shifts. Attempt maximum correct answers — even a few extra rights can significantly boost your normalized score.</div></div></div>
+      <div class="tip"><div class="tip-ico">🎯</div><div><div class="tip-title">Subject Selection Matters</div><div class="tip-text">Choose up to 6 subjects aligned with your target collage. SRCC requires Accountancy + Economics + English as minimum. Plan subject combo carefully.</div></div></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+  // ── Starfield ──────────────────────────────────
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [];
+  function makeStars(w, h) {
+    return Array.from({length: 160}, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      r: Math.random() * 1.2 + 0.2,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.003 + Math.random() * 0.005
+    }));
+  }
+  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; stars = makeStars(W, H); }
+  resize();
+  window.addEventListener('resize', resize);
+  (function draw() {
+    ctx.clearRect(0, 0, W, H);
+    stars.forEach(s => {
+      s.phase += s.speed;
+      const a = (Math.sin(s.phase) + 1) / 2;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(80,120,210,${(a * 0.65)*0.45})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  })();
+
+  // ── Tab switching ──────────────────────────────
+  function tab(btn, panelId) {
+    const card = btn.closest('.ecard');
+    card.querySelectorAll('.etab').forEach(t => t.classList.remove('on'));
+    card.querySelectorAll('.epanel').forEach(p => p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById(panelId).classList.add('on');
+  }
+
+  // ── Filter ─────────────────────────────────────
+  function filter(btn) {
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const cat = btn.dataset.c;
+    document.querySelectorAll('#main .ecard').forEach(card => {
+      card.style.display = (cat === 'all' || card.dataset.c === cat) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#f0f4ff; --card: rgba(255,255,255,0.92);
+      --primary:#4f8ef7; --violet:#8b5cf6; --gold:#c2780a;
+      --green:#10b981; --pink:#ec4899; --red:#ef4444;
+      --text:#0f172a; --muted:#64748b; --border:rgba(59,125,232,0.22);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:16px 40px;background:rgba(240,244,255,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--text);text-decoration:none;}
+    .logo span{color:var(--gold);}
+    .admin-badge{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;padding:4px 12px;border-radius:50px;font-size:0.72rem;font-weight:700;letter-spacing:1px;}
+    .nav-right{display:flex;align-items:center;gap:20px;}
+    .nav-right a{color:var(--muted);text-decoration:none;font-size:0.85rem;font-weight:700;transition:color .3s;}
+    .nav-right a:hover{color:var(--text);}
+
+    main{max-width:1200px;margin:0 auto;padding:40px 24px 80px;}
+
+    /* PAGE HEADER */
+    .page-head{margin-bottom:40px;}
+    .page-tag{font-size:0.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:8px;}
+    .page-title{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:1px;}
+    .page-sub{color:var(--muted);font-size:0.9rem;margin-top:6px;}
+
+    /* FLASH */
+    .flash{padding:12px 18px;border-radius:10px;font-size:0.88rem;font-weight:700;margin-bottom:24px;}
+    .flash.success{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#34d399;}
+    .flash.error{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#f87171;}
+
+    /* STATS GRID */
+    .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:40px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;backdrop-filter:blur(12px);text-align:center;}
+    .stat-icon{font-size:2rem;margin-bottom:8px;}
+    .stat-num{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1;margin-bottom:4px;}
+    .stat-label{font-size:0.75rem;color:var(--muted);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+    .stat-card.s1{border-top:3px solid var(--primary);}
+    .stat-card.s2{border-top:3px solid var(--green);}
+    .stat-card.s3{border-top:3px solid var(--violet);}
+    .stat-card.s4{border-top:3px solid var(--gold);}
+    .stat-card.s5{border-top:3px solid var(--pink);}
+
+    /* SECTION */
+    .section{margin-bottom:48px;}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+    .section-title .badge{font-size:0.7rem;font-family:'Nunito',sans-serif;background:rgba(79,142,247,0.12);color:var(--primary);padding:3px 10px;border-radius:50px;letter-spacing:1px;}
+
+    /* TABLE */
+    .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;backdrop-filter:blur(12px);}
+    table{width:100%;border-collapse:collapse;}
+    thead tr{border-bottom:1px solid var(--border);background:rgba(79,142,247,0.05);}
+    th{padding:14px 18px;text-align:left;font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+    tbody tr{border-bottom:1px solid rgba(79,142,247,0.08);transition:background .2s;}
+    tbody tr:last-child{border-bottom:none;}
+    tbody tr:hover{background:rgba(79,142,247,0.04);}
+    td{padding:14px 18px;font-size:0.88rem;vertical-align:middle;}
+    .td-muted{color:var(--muted);font-size:0.8rem;}
+
+    /* CHIPS */
+    .chip{display:inline-flex;padding:3px 10px;border-radius:50px;font-size:0.72rem;font-weight:700;}
+    .chip-10{background:rgba(79,142,247,0.12);color:var(--primary);border:1px solid rgba(79,142,247,0.25);}
+    .chip-12{background:rgba(139,92,246,0.12);color:var(--violet);border:1px solid rgba(139,92,246,0.25);}
+    .chip-admin{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.25);}
+    .chip-user{background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.25);}
+
+    /* CONFIDENCE BAR */
+    .conf-bar{display:flex;align-items:center;gap:8px;}
+    .conf-track{width:80px;height:6px;background:rgba(0,0,0,0.06);border-radius:6px;overflow:hidden;}
+    .conf-fill{height:100%;border-radius:6px;}
+
+    /* DELETE BUTTON */
+    .btn-del{padding:5px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;}
+    .btn-del:hover{background:rgba(239,68,68,0.2);}
+
+    /* TOP PREDICTIONS */
+    .pred-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+    .pred-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;backdrop-filter:blur(10px);}
+    .pred-count{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--primary);}
+    .pred-name{font-size:0.8rem;color:var(--muted);margin-top:4px;font-weight:600;}
+
+    @media(max-width:768px){
+      nav{padding:14px 20px;}
+      .stats-grid{grid-template-columns:1fr 1fr;}
+      .table-wrap{overflow-x:auto;}
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="logo" href="/">Career<span>.</span>learning</a>
+    <span class="admin-badge">⚙ ADMIN PANEL</span>
+    <div class="nav-right">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/logout">Logout</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-head">
+      <div class="page-tag">⚙ Admin Access Only</div>
+      <div class="page-title">ADMIN DASHBOARD</div>
+      <div class="page-sub">Manage users, view results, and monitor platform activity</div>
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card s1">
+        <div class="stat-icon">👥</div>
+        <div class="stat-num" style="color:var(--primary)">{{ total_users }}</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="stat-card s2">
+        <div class="stat-icon">📊</div>
+        <div class="stat-num" style="color:var(--green)">{{ total_results }}</div>
+        <div class="stat-label">Assessments Done</div>
+      </div>
+      <div class="stat-card s3">
+        <div class="stat-icon">🎓</div>
+        <div class="stat-num" style="color:var(--violet)">{{ tenth_count }}</div>
+        <div class="stat-label">Class 10 Tests</div>
+      </div>
+      <div class="stat-card s4">
+        <div class="stat-icon">🎒</div>
+        <div class="stat-num" style="color:var(--gold)">{{ twelfth_count }}</div>
+        <div class="stat-label">Class 12 Tests</div>
+      </div>
+      <div class="stat-card s5">
+        <div class="stat-icon">📝</div>
+        <div class="stat-num" style="color:var(--pink)">{{ total_tests }}</div>
+        <div class="stat-label">Mock Tests Taken</div>
+      </div>
+    </div>
+
+    <!-- TOP PREDICTIONS -->
+    {% if top_predictions %}
+    <div class="section">
+      <div class="section-title">🏆 Top Predicted Paths <span class="badge">Most Common</span></div>
+      <div class="pred-grid">
+        {% for pred, cnt in top_predictions %}
+        <div class="pred-item">
+          <div class="pred-count">{{ cnt }}</div>
+          <div class="pred-name">{{ pred }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- USERS TABLE -->
+    <div class="section">
+      <div class="section-title">👥 All Users <span class="badge">{{ total_users }} Total</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Class</th>
+              <th>Role</th>
+              <th>Tests Done</th>
+              <th>Joined</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td class="td-muted">{{ user.id }}</td>
+              <td><strong>{{ user.fullname }}</strong></td>
+              <td class="td-muted">@{{ user.username }}</td>
+              <td class="td-muted">{{ user.email }}</td>
+              <td>
+                {% if user.student_class %}
+                  <span class="chip chip-{{ user.student_class }}">Class {{ user.student_class }}</span>
+                {% else %}
+                  <span class="td-muted">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if user.is_admin %}
+                  <span class="chip chip-admin">Admin</span>
+                {% else %}
+                  <span class="chip chip-user">Student</span>
+                {% endif %}
+              </td>
+              <td><strong>{{ user.result_count }}</strong></td>
+              <td class="td-muted">{{ user.created_at.strftime('%d %b %Y') if user.created_at else '—' }}</td>
+              <td>
+                {% if not user.is_admin %}
+                <form action="/admin/delete-user/{{ user.id }}" method="POST"
+                      onsubmit="return confirm('Delete {{ user.fullname }}? This cannot be undone.')">
+                  <button type="submit" class="btn-del">Delete</button>
+                </form>
+                {% else %}
+                  <span class="td-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">No users yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RESULTS TABLE -->
+    <div class="section">
+      <div class="section-title">📊 Recent Assessments <span class="badge">Last 50</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student</th>
+              <th>Type</th>
+              <th>Prediction</th>
+              <th>Confidence</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in results %}
+            <tr>
+              <td class="td-muted">{{ r.id }}</td>
+              <td>
+                <strong>{{ r.fullname }}</strong><br>
+                <span class="td-muted">@{{ r.username }}</span>
+              </td>
+              <td>
+                <span class="chip chip-{{ r.result_type.replace('th','') }}">
+                  Class {{ r.result_type }}
+                </span>
+              </td>
+              <td><strong>{{ r.prediction }}</strong></td>
+              <td>
+                <div class="conf-bar">
+                  <div class="conf-track">
+                    <div class="conf-fill" style="width:{{ r.confidence }}%;background:{% if r.confidence >= 75 %}var(--green){% elif r.confidence >= 55 %}var(--primary){% else %}var(--gold){% endif %}"></div>
+                  </div>
+                  <span style="font-size:0.82rem;font-weight:700">{{ r.confidence }}%</span>
+                </div>
+              </td>
+              <td class="td-muted">{{ r.created_at.strftime('%d %b %Y, %H:%M') if r.created_at else '—' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No assessments yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MOCK TEST SCORES -->
+    {% if test_attempts %}
+    <div class="section">
+      <div class="section-title">📝 Mock Test Scores <span class="badge">{{ total_tests }} Total</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student</th>
+              <th>Test Name</th>
+              <th>Score</th>
+              <th>Percentage</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ta in test_attempts %}
+            <tr>
+              <td class="td-muted">{{ ta.id }}</td>
+              <td>
+                <strong>{{ ta.fullname }}</strong><br>
+                <span class="td-muted">@{{ ta.username }}</span>
+              </td>
+              <td><strong>{{ ta.test_title }}</strong></td>
+              <td><strong>{{ ta.score }}/{{ ta.total_questions }}</strong></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:60px;height:6px;background:rgba(0,0,0,0.06);border-radius:6px;overflow:hidden">
+                    <div style="height:100%;border-radius:6px;width:{{ ta.percentage }}%;background:{% if ta.percentage >= 75 %}var(--green){% elif ta.percentage >= 55 %}var(--primary){% else %}var(--gold){% endif %}"></div>
+                  </div>
+                  <span style="font-size:0.82rem;font-weight:700">{{ "%.1f"|format(ta.percentage) }}%</span>
+                </div>
+              </td>
+              <td class="td-muted">{{ ta.attempted_at.strftime('%d %b %Y, %H:%M') if ta.attempted_at else '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </main>
+
+</body>
+</html>

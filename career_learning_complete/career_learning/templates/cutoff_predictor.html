@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cutoff Predictor - Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#f0f4ff; --glass:rgba(255,255,255,0.92);
+      --primary:#4f8ef7; --violet:#8b5cf6; --gold:#c2780a;
+      --green:#10b981; --teal:#0d9488; --orange:#f97316; --red:#ef4444;
+      --text:#0f172a; --muted:#64748b; --border:rgba(59,125,232,0.22);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden;}
+    canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+    .orb{position:fixed;border-radius:50%;filter:blur(130px);pointer-events:none;z-index:0;}
+    .orb-1{width:600px;height:600px;background:rgba(79,142,247,0.08);top:-150px;right:-150px;}
+    .orb-2{width:500px;height:500px;background:rgba(139,92,246,0.06);bottom:0;left:-150px;}
+    nav{position:sticky;top:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:16px 60px;background:rgba(240,244,255,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--text);text-decoration:none;}
+    .logo span{color:var(--gold);}
+    .nav-links{display:flex;gap:24px;list-style:none;align-items:center;}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:0.88rem;font-weight:700;transition:color .3s;}
+    .nav-links a:hover,.nav-links a.active{color:var(--primary);}
+    .wrap{position:relative;z-index:1;display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 57px);}
+    .left{padding:28px;border-right:1px solid var(--border);background:rgba(240,244,255,0.92);overflow-y:auto;max-height:calc(100vh - 57px);position:sticky;top:57px;}
+    .panel-title{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:1px;margin-bottom:4px;background:linear-gradient(90deg,var(--primary),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .panel-sub{color:var(--muted);font-size:0.8rem;margin-bottom:22px;line-height:1.65;}
+    .sec-lbl{font-size:0.69rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+    .sec-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+    .exam-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;}
+    .etab{padding:14px 10px;border-radius:14px;font-size:0.85rem;font-weight:800;border:1.5px solid var(--border);background:rgba(240,244,255,0.88);color:var(--muted);cursor:pointer;text-align:center;transition:all .25s;font-family:'Nunito',sans-serif;line-height:1.4;}
+    .etab small{display:block;font-size:0.71rem;opacity:.8;font-weight:600;margin-top:2px;}
+    .etab:hover{border-color:rgba(79,142,247,0.4);color:var(--text);}
+    .etab.on{color:#fff;border-color:transparent;}
+    .etab[data-t="engg"].on{background:linear-gradient(135deg,var(--primary),#0ea5e9);box-shadow:0 4px 20px rgba(79,142,247,0.35);}
+    .etab[data-t="medical"].on{background:linear-gradient(135deg,var(--green),var(--teal));box-shadow:0 4px 20px rgba(16,185,129,0.35);}
+    .fgroup{margin-bottom:16px;}
+    .flabel{display:block;font-size:0.71rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+    .flabel small{text-transform:none;letter-spacing:0;font-size:0.68rem;}
+    .finput,.fselect{width:100%;padding:11px 14px;background:rgba(0,0,0,0.05);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.9rem;transition:all .3s;}
+    .finput:focus,.fselect:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,142,247,0.12);}
+    .finput::placeholder{color:var(--muted);}
+    .fselect{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7a9d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:calc(100% - 14px) 50%;padding-right:34px;background-color:rgba(0,0,0,0.05);}
+    .fselect option{background:#f0f4ff;}
+    .slider-wrap{margin-top:6px;}
+    .slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+    .slider-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--primary);line-height:1;}
+    .slider-unit{font-size:0.72rem;color:var(--muted);font-weight:700;}
+    input[type=range]{width:100%;accent-color:var(--primary);cursor:pointer;height:5px;border-radius:10px;}
+    .slider-minmax{display:flex;justify-content:space-between;font-size:0.67rem;color:var(--muted);margin-top:4px;}
+    .range-hint{font-size:0.71rem;color:var(--muted);margin-top:5px;line-height:1.5;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .btn-predict{width:100%;padding:15px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--primary),var(--violet));color:#fff;font-size:1rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;letter-spacing:.5px;box-shadow:0 4px 24px rgba(79,142,247,0.45);transition:all .3s;margin-top:4px;}
+    .btn-predict:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(79,142,247,0.6);}
+    .btn-predict:active{transform:scale(0.98);}
+    .disclaimer{margin-top:14px;padding:11px 14px;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:10px;font-size:0.71rem;color:var(--muted);line-height:1.6;}
+    .disclaimer strong{color:var(--gold);}
+    .right{padding:32px 36px 80px;overflow-y:auto;}
+    .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:65vh;gap:16px;text-align:center;color:var(--muted);}
+    .empty-icon{font-size:4rem;opacity:.3;}
+    .empty h2{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:1px;color:var(--text);opacity:.6;}
+    .empty p{font-size:0.86rem;max-width:320px;line-height:1.7;}
+    .res-header{margin-bottom:20px;}
+    .res-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:1px;margin-bottom:4px;}
+    .res-sub{color:var(--muted);font-size:0.81rem;}
+    .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
+    .filter-bar span{font-size:0.74rem;color:var(--muted);font-weight:700;}
+    .fbtn{padding:6px 14px;border-radius:50px;font-size:0.75rem;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;}
+    .fbtn:hover{border-color:var(--primary);color:var(--text);}
+    .fbtn.on{background:rgba(79,142,247,0.15);border-color:var(--primary);color:var(--primary);}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;}
+    .scard{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;backdrop-filter:blur(10px);}
+    .snum{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1;}
+    .slabel{font-size:0.67rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;padding:12px 16px;background:rgba(0,0,0,0.03);border:1px solid var(--border);border-radius:12px;margin-bottom:24px;}
+    .leg-item{display:flex;align-items:center;gap:6px;font-size:0.71rem;font-weight:700;}
+    .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .result-section{margin-bottom:28px;}
+    .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+    .sec-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+    .sec-name{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:1px;}
+    .sec-desc{color:var(--muted);font-size:0.73rem;flex:1;}
+    .sec-count{font-size:0.71rem;font-weight:800;padding:3px 12px;border-radius:50px;}
+    .rcard{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:9px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(10px);transition:all .25s;animation:slideIn .35s ease both;}
+    .rcard:hover{transform:translateX(5px);border-color:rgba(79,142,247,0.35);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-12px);}to{opacity:1;transform:translateX(0);}}
+    .chance-badge{width:56px;height:56px;border-radius:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:0.68rem;text-align:center;border:2px solid;line-height:1.3;gap:1px;}
+    .chance-badge .cbicon{font-size:1.1rem;line-height:1;}
+    .c-safe{color:var(--green);border-color:var(--green);background:rgba(16,185,129,0.1);}
+    .c-good{color:var(--primary);border-color:var(--primary);background:rgba(79,142,247,0.1);}
+    .c-moderate{color:var(--gold);border-color:var(--gold);background:rgba(245,158,11,0.1);}
+    .c-tough{color:var(--orange);border-color:var(--orange);background:rgba(249,115,22,0.1);}
+    .c-reach{color:var(--red);border-color:var(--red);background:rgba(239,68,68,0.1);}
+    .rinfo{flex:1;min-width:0;}
+    .rname{font-size:0.91rem;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .rmeta{font-size:0.72rem;color:var(--muted);margin-bottom:6px;}
+    .prog-wrap{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+    .prog-bar{flex:1;height:5px;background:rgba(0,0,0,0.06);border-radius:10px;overflow:hidden;}
+    .prog-fill{height:100%;border-radius:10px;transition:width .6s ease;}
+    .prog-pct{font-size:0.71rem;font-weight:800;min-width:34px;text-align:right;}
+    .rtags{display:flex;gap:6px;flex-wrap:wrap;}
+    .rtag{padding:2px 9px;border-radius:50px;font-size:0.67rem;font-weight:700;}
+    .t-safe{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+    .t-good{background:rgba(79,142,247,0.12);color:var(--primary);border:1px solid rgba(79,142,247,0.2);}
+    .t-moderate{background:rgba(245,158,11,0.12);color:var(--gold);border:1px solid rgba(245,158,11,0.2);}
+    .t-tough{background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.2);}
+    .t-reach{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+    .t-type{background:rgba(79,142,247,0.06);color:var(--muted);border:1px solid rgba(79,142,247,0.12);}
+    .t-hs{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);}
+    .rright{text-align:right;flex-shrink:0;min-width:100px;}
+    .rcut-label{font-size:0.65rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+    .rcut-val{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;line-height:1.3;}
+    .no-results{text-align:center;padding:40px;color:var(--muted);}
+    .no-results h3{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px;margin-bottom:8px;color:var(--text);opacity:.6;}
+    .info-note{margin-top:24px;padding:14px 16px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.18);border-radius:12px;font-size:0.76rem;color:var(--muted);line-height:1.65;}
+    .info-note strong{color:var(--gold);}
+    .portal-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+    .portal-link{padding:5px 12px;border-radius:8px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);color:var(--primary);font-size:0.72rem;font-weight:700;text-decoration:none;}
+    .portal-link:hover{background:rgba(79,142,247,0.2);}
+    @media(max-width:960px){
+      .wrap{grid-template-columns:1fr;}
+      .left{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--border);}
+      nav,.left,.right{padding-left:20px;padding-right:20px;}
+      .summary{grid-template-columns:repeat(2,1fr);}
+    }
+  </style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <a class="logo" href="/">Career<span>.</span>learning</a>
+  <ul class="nav-links">
+    <li><a href="/dashboard">Home</a></li>
+    <li><a href="/collage">collages</a></li>
+    <li><a href="/exam-tracker">Exam Tracker</a></li>
+    <li><a href="/cutoff" class="active">Cutoff Predictor</a></li>
+    <li><a href="/chatbot">CareerBot</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+  <div class="left">
+    <div class="panel-title">Cutoff Predictor</div>
+    <p class="panel-sub">Enter your JEE or NEET rank and instantly see which collages you can get into — based on JoSAA 2025 and MCC 2025 data.</p>
+
+    <div class="sec-lbl">Step 1 — Select Exam</div>
+    <div class="exam-tabs" style="margin-bottom:22px">
+      <div class="etab on" data-t="engg" onclick="setType(this)">Engineering<small>JEE Main / Advanced</small></div>
+      <div class="etab" data-t="medical" onclick="setType(this)">Medical<small>NEET UG 2025</small></div>
+    </div>
+
+    <div class="sec-lbl">Step 2 — Enter Your Score</div>
+    <div id="scoreInputs"></div>
+
+    <div class="sec-lbl">Step 3 — Reservation Category</div>
+    <div class="fgroup">
+      <select class="fselect" id="resCat">
+        <option value="gen">General (UR)</option>
+        <option value="obc">OBC-NCL</option>
+        <option value="sc">SC (Scheduled Caste)</option>
+        <option value="st">ST (Scheduled Tribe)</option>
+        <option value="ews">EWS</option>
+        <option value="pwd">PwD</option>
+      </select>
+    </div>
+
+    <div class="sec-lbl">Step 4 — Home State</div>
+    <div class="fgroup" id="stateRow">
+      <select class="fselect" id="homeSt">
+        <option value="">-- Select State --</option>
+        <option>Andhra Pradesh</option><option>Assam</option><option>Bihar</option>
+        <option>Chhattisgarh</option><option>Delhi</option><option>Goa</option>
+        <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option>
+        <option>Jharkhand</option><option>Karnataka</option><option>Kerala</option>
+        <option>Madhya Pradesh</option><option>Maharashtra</option>
+        <option>Odisha</option><option>Punjab</option><option>Rajasthan</option>
+        <option>Tamil Nadu</option><option>Telangana</option><option>Uttar Pradesh</option>
+        <option>Uttarakhand</option><option>West Bengal</option>
+      </select>
+    </div>
+
+    <button class="btn-predict" onclick="predict()">&#128269; &nbsp;Predict My collages</button>
+    <div class="disclaimer">&#9888;&#65039; <strong>Disclaimer:</strong> Based on JoSAA 2025 &amp; MCC 2025 approximate closing rank data. Actual cutoffs vary every year. Always verify on official portals before applying.</div>
+  </div>
+
+  <div class="right" id="rightPanel">
+    <div class="empty" id="emptyState">
+      <div class="empty-icon">&#127919;</div>
+      <h2>Ready to Predict</h2>
+      <p>Enter your exam details on the left and click Predict — we'll show all collages ranked by your admission chances.</p>
+    </div>
+    <div id="resultArea" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+var canvas = document.getElementById('stars');
+var ctx = canvas.getContext('2d');
+var W, H, stars = [];
+function makeStars(w,h){var a=[];for(var i=0;i<180;i++){a.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.1+0.2,phase:Math.random()*Math.PI*2,speed:0.003+Math.random()*0.004});}return a;}
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight;stars=makeStars(W,H);}
+resize();window.addEventListener('resize',resize);
+(function draw(){ctx.clearRect(0,0,W,H);for(var i=0;i<stars.length;i++){var s=stars[i];s.phase+=s.speed;var a=(Math.sin(s.phase)+1)/2;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba(200,220,255,'+(a*0.6)+')';ctx.fill();}requestAnimationFrame(draw);})();
+
+var currentType='engg', allResults=[], activeFilter='all';
+
+function buildEnggInputs(){
+  return '<div class="fgroup">' +
+    '<label class="flabel">JEE Main Percentile</label>' +
+    '<div class="slider-wrap">' +
+      '<div class="slider-top"><span class="slider-val" id="jeeMainPctVal">85.0</span><span class="slider-unit">Percentile</span></div>' +
+      '<input type="range" id="jeeMainPct" min="40" max="100" step="0.1" value="85" oninput="document.getElementById(\'jeeMainPctVal\').textContent=parseFloat(this.value).toFixed(1)">' +
+      '<div class="slider-minmax"><span>40</span><span>100</span></div>' +
+      '<div class="range-hint">Used for Private collages (BITS, VIT, Thapar etc.)</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="two-col">' +
+    '<div class="fgroup">' +
+      '<label class="flabel">JEE Main Rank</label>' +
+      '<input type="number" class="finput" id="jeeMainRank" placeholder="e.g. 25000" min="1" max="1200000">' +
+      '<div class="range-hint">For NITs, IIITs, GFTIs</div>' +
+    '</div>' +
+    '<div class="fgroup">' +
+      '<label class="flabel">JEE Advanced Rank</label>' +
+      '<input type="number" class="finput" id="jeeAdvRank" placeholder="e.g. 2500" min="1" max="50000">' +
+      '<div class="range-hint">For IITs only</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function buildMedicalInputs(){
+  return '<div class="fgroup">' +
+    '<label class="flabel">NEET UG Rank <span style="color:var(--red);font-size:0.68rem;text-transform:none">(Required)</span></label>' +
+    '<input type="number" class="finput" id="neetRank" placeholder="e.g. 5000" min="1" max="2000000">' +
+    '<div class="range-hint">Enter your All India Rank from NEET 2025 result</div>' +
+  '</div>' +
+  '<div class="fgroup">' +
+    '<label class="flabel">NEET Score <small>(optional, for reference)</small></label>' +
+    '<input type="number" class="finput" id="neetScore" placeholder="e.g. 620 (out of 720)" min="100" max="720">' +
+  '</div>';
+}
+
+function setType(el){
+  document.querySelectorAll('.etab').forEach(function(p){p.classList.remove('on');});
+  el.classList.add('on');
+  currentType=el.dataset.t;
+  document.getElementById('scoreInputs').innerHTML=currentType==='engg'?buildEnggInputs():buildMedicalInputs();
+  document.getElementById('emptyState').style.display='flex';
+  document.getElementById('resultArea').style.display='none';
+  allResults=[];
+}
+document.getElementById('scoreInputs').innerHTML=buildEnggInputs();
+
+// Home State mapping
+var hsMap={
+  'Tamil Nadu':['NIT Trichy'],'Telangana':['NIT Warangal'],'Karnataka':['NIT Surathkal'],
+  'Kerala':['NIT Calicut'],'Uttar Pradesh':['MNNIT Allahabad','NIT Patna'],
+  'Rajasthan':['MNIT Jaipur'],'Odisha':['NIT Rourkela'],'Maharashtra':['VNIT Nagpur'],
+  'Madhya Pradesh':['MANIT Bhopal'],'Haryana':['NIT Kurukshetra'],'West Bengal':['NIT Durgapur'],
+  'Assam':['NIT Silchar'],'Delhi':['NIT Delhi','DTU Delhi','NSUT Delhi','IIIT Delhi'],
+  'Bihar':['NIT Patna'],'Jharkhand':['NIT Jamshedpur'],'Punjab':['PEC Chandigarh','NIT Jalandhar'],
+  'Goa':['NIT Goa'],'Andhra Pradesh':['NIT Andhra Pradesh'],
+  'Uttarakhand':['NIT Uttarakhand'],'Chhattisgarh':['NIT Raipur'],'Jammu & Kashmir':['NIT Srinagar']
+};
+
+function checkHS(name,state){
+  if(!state)return false;
+  var list=hsMap[state]||[];
+  for(var i=0;i<list.length;i++){if(name.indexOf(list[i])!==-1)return true;}
+  return false;
+}
+
+function getCut(c,cat,state){
+  var map={gen:'cutGen',obc:'cutOBC',sc:'cutSC',st:'cutST',ews:'cutEWS',pwd:'cutSC'};
+  var base=c[map[cat]||'cutGen']!==undefined?c[map[cat]||'cutGen']:c.cutGen;
+  if(state&&checkHS(c.name,state)&&c.type!=='IIT'&&c.type.indexOf('Private')===-1){
+    return Math.round(base*1.38);
+  }
+  return base;
+}
+
+function getChance(myVal,cutoff,mode){
+  var ratio=mode==='lower'?cutoff/myVal:myVal/cutoff;
+  var pct;
+  if(ratio>=1.20)pct=Math.min(97,Math.round(75+(ratio-1.20)*80));
+  else if(ratio>=1.05)pct=Math.round(60+(ratio-1.05)/0.15*15);
+  else if(ratio>=0.97)pct=Math.round(40+(ratio-0.97)/0.08*20);
+  else if(ratio>=0.85)pct=Math.round(15+(ratio-0.85)/0.12*25);
+  else pct=Math.max(3,Math.round(ratio*18));
+  if(ratio>=1.12)return{label:'Safe',cls:'safe',icon:'&#9989;',pct:pct};
+  if(ratio>=1.03)return{label:'Good',cls:'good',icon:'&#128994;',pct:pct};
+  if(ratio>=0.97)return{label:'Moderate',cls:'moderate',icon:'&#128993;',pct:pct};
+  if(ratio>=0.87)return{label:'Tough',cls:'tough',icon:'&#128992;',pct:pct};
+  return{label:'Reach',cls:'reach',icon:'&#128308;',pct:pct};
+}
+
+// ── CUTOFF DATA ─────────────────────────────────────────────────────────────
+var data={
+  engg:{
+    iit:[
+      // JoSAA 2025 Verified Closing Ranks — JEE Advanced, General/Open CRL
+      {name:'IIT Bombay - Computer Science & Engg',    loc:'Mumbai, MH',        cutGen:66,   cutOBC:54,   cutSC:31,   cutST:19,   cutEWS:20,   type:'IIT'},
+      {name:'IIT Delhi - Computer Science & Engg',     loc:'New Delhi',         cutGen:125,  cutOBC:89,   cutSC:120,  cutST:55,   cutEWS:40,   type:'IIT'},
+      {name:'IIT Madras - Computer Science & Engg',    loc:'Chennai, TN',       cutGen:171,  cutOBC:150,  cutSC:180,  cutST:80,   cutEWS:60,   type:'IIT'},
+      {name:'IIT Kanpur - Computer Science & Engg',    loc:'Kanpur, UP',        cutGen:270,  cutOBC:220,  cutSC:280,  cutST:130,  cutEWS:90,   type:'IIT'},
+      {name:'IIT Kharagpur - Computer Science & Engg', loc:'Kharagpur, WB',     cutGen:430,  cutOBC:380,  cutSC:450,  cutST:200,  cutEWS:150,  type:'IIT'},
+      {name:'IIT Roorkee - Computer Science & Engg',   loc:'Roorkee, UK',       cutGen:580,  cutOBC:500,  cutSC:600,  cutST:280,  cutEWS:200,  type:'IIT'},
+      {name:'IIT Guwahati - Computer Science & Engg',  loc:'Guwahati, AS',      cutGen:680,  cutOBC:590,  cutSC:700,  cutST:320,  cutEWS:240,  type:'IIT'},
+      {name:'IIT Hyderabad - Computer Science & Engg', loc:'Hyderabad, TS',     cutGen:730,  cutOBC:630,  cutSC:800,  cutST:360,  cutEWS:260,  type:'IIT'},
+      {name:'IIT Hyderabad - Artificial Intelligence',  loc:'Hyderabad, TS',     cutGen:800,  cutOBC:700,  cutSC:900,  cutST:400,  cutEWS:290,  type:'IIT'},
+      {name:'IIT Bombay - Electrical Engineering',     loc:'Mumbai, MH',        cutGen:496,  cutOBC:420,  cutSC:520,  cutST:240,  cutEWS:180,  type:'IIT'},
+      {name:'IIT Delhi - Electrical Engineering',      loc:'New Delhi',         cutGen:660,  cutOBC:570,  cutSC:700,  cutST:310,  cutEWS:230,  type:'IIT'},
+      {name:'IIT Madras - Electrical Engineering',     loc:'Chennai, TN',       cutGen:1050, cutOBC:900,  cutSC:1100, cutST:500,  cutEWS:370,  type:'IIT'},
+      {name:'IIT Roorkee - Electronics & Comm.',       loc:'Roorkee, UK',       cutGen:2100, cutOBC:1800, cutSC:2200, cutST:1000, cutEWS:750,  type:'IIT'},
+      {name:'IIT BHU Varanasi - Computer Science',     loc:'Varanasi, UP',      cutGen:1100, cutOBC:950,  cutSC:1150, cutST:520,  cutEWS:390,  type:'IIT'},
+      {name:'IIT BHU Varanasi - Electronics Engg',     loc:'Varanasi, UP',      cutGen:3500, cutOBC:3000, cutSC:3600, cutST:1600, cutEWS:1250, type:'IIT'},
+      {name:'IIT Indore - Computer Science',           loc:'Indore, MP',        cutGen:1450, cutOBC:1250, cutSC:1500, cutST:680,  cutEWS:510,  type:'IIT'},
+      {name:'IIT Gandhinagar - Computer Science',      loc:'Gandhinagar, GJ',   cutGen:1700, cutOBC:1450, cutSC:1750, cutST:800,  cutEWS:600,  type:'IIT'},
+      {name:'IIT Ropar - Computer Science',            loc:'Rupnagar, PB',      cutGen:2000, cutOBC:1720, cutSC:2100, cutST:950,  cutEWS:710,  type:'IIT'},
+      {name:'IIT Jodhpur - Computer Science',          loc:'Jodhpur, RJ',       cutGen:2600, cutOBC:2230, cutSC:2700, cutST:1220, cutEWS:920,  type:'IIT'},
+      {name:'IIT Patna - Computer Science',            loc:'Patna, BR',         cutGen:2900, cutOBC:2490, cutSC:3000, cutST:1360, cutEWS:1030, type:'IIT'},
+      {name:'IIT Mandi - Computer Science',            loc:'Mandi, HP',         cutGen:3087, cutOBC:2650, cutSC:3200, cutST:1450, cutEWS:1090, type:'IIT'},
+      {name:'IIT ISM Dhanbad - Computer Science',      loc:'Dhanbad, JH',       cutGen:3300, cutOBC:2840, cutSC:3400, cutST:1540, cutEWS:1170, type:'IIT'},
+      {name:'IIT Bhubaneswar - Computer Science',      loc:'Bhubaneswar, OD',   cutGen:3785, cutOBC:3250, cutSC:3900, cutST:1760, cutEWS:1340, type:'IIT'},
+      {name:'IIT Tirupati - Computer Science',         loc:'Tirupati, AP',      cutGen:4500, cutOBC:3860, cutSC:4600, cutST:2080, cutEWS:1590, type:'IIT'},
+      {name:'IIT Goa - Computer Science',              loc:'Ponda, GA',         cutGen:4700, cutOBC:4040, cutSC:4900, cutST:2210, cutEWS:1660, type:'IIT'},
+      {name:'IIT Dharwad - Computer Science',          loc:'Dharwad, KA',       cutGen:5800, cutOBC:4980, cutSC:6000, cutST:2710, cutEWS:2040, type:'IIT'},
+      {name:'IIT Palakkad - Computer Science',         loc:'Palakkad, KL',      cutGen:5600, cutOBC:4810, cutSC:5800, cutST:2620, cutEWS:1970, type:'IIT'},
+      {name:'IIT Jammu - Computer Science',            loc:'Jammu, JK',         cutGen:6100, cutOBC:5240, cutSC:6300, cutST:2850, cutEWS:2140, type:'IIT'},
+      {name:'IIT Bombay - Mechanical Engineering',     loc:'Mumbai, MH',        cutGen:2400, cutOBC:2060, cutSC:2500, cutST:1130, cutEWS:850,  type:'IIT'},
+      {name:'IIT Delhi - Mechanical Engineering',      loc:'New Delhi',         cutGen:3000, cutOBC:2580, cutSC:3100, cutST:1400, cutEWS:1060, type:'IIT'}
+    ],
+    nit:[
+      // JoSAA 2025 Round 6 — General AI, Other State Quota
+      {name:'NIT Trichy - Computer Science',           loc:'Trichy, TN',        cutGen:1605, cutOBC:800,  cutSC:1081, cutST:1781, cutEWS:4720, type:'NIT'},
+      {name:'NIT Trichy - Electronics & Comm.',        loc:'Trichy, TN',        cutGen:5300, cutOBC:2700, cutSC:4500, cutST:7000, cutEWS:9000, type:'NIT'},
+      {name:'NIT Trichy - Mechanical Engineering',     loc:'Trichy, TN',        cutGen:27257,cutOBC:13800,cutSC:23000,cutST:35000,cutEWS:42000,type:'NIT'},
+      {name:'NIT Surathkal - Computer Science',        loc:'Surathkal, KA',     cutGen:2726, cutOBC:2251, cutSC:917,  cutST:500,  cutEWS:549,  type:'NIT'},
+      {name:'NIT Surathkal - Electronics & Comm.',     loc:'Surathkal, KA',     cutGen:6000, cutOBC:3000, cutSC:5000, cutST:8000, cutEWS:10000,type:'NIT'},
+      {name:'NIT Surathkal - Mechanical Engineering',  loc:'Surathkal, KA',     cutGen:22534,cutOBC:11400,cutSC:19100,cutST:29800,cutEWS:35500,type:'NIT'},
+      {name:'NIT Warangal - Computer Science',         loc:'Warangal, TS',      cutGen:2634, cutOBC:1400, cutSC:2200, cutST:3500, cutEWS:4200, type:'NIT'},
+      {name:'NIT Warangal - Electronics & Comm.',      loc:'Warangal, TS',      cutGen:5654, cutOBC:2800, cutSC:4500, cutST:7000, cutEWS:8500, type:'NIT'},
+      {name:'NIT Warangal - Mechanical Engineering',   loc:'Warangal, TS',      cutGen:29999,cutOBC:15200,cutSC:25400,cutST:39600,cutEWS:47300,type:'NIT'},
+      {name:'NIT Rourkela - Computer Science',         loc:'Rourkela, OD',      cutGen:3431, cutOBC:1700, cutSC:2800, cutST:4500, cutEWS:5200, type:'NIT'},
+      {name:'NIT Rourkela - Electronics & Comm.',      loc:'Rourkela, OD',      cutGen:8500, cutOBC:4300, cutSC:7200, cutST:11200,cutEWS:13400,type:'NIT'},
+      {name:'NIT Calicut - Computer Science',          loc:'Calicut, KL',       cutGen:4482, cutOBC:2200, cutSC:3600, cutST:5800, cutEWS:6800, type:'NIT'},
+      {name:'NIT Calicut - Electronics & Comm.',       loc:'Calicut, KL',       cutGen:11606,cutOBC:5700, cutSC:9000, cutST:14000,cutEWS:16000,type:'NIT'},
+      {name:'MNNIT Allahabad - Computer Science',      loc:'Prayagraj, UP',     cutGen:5200, cutOBC:2600, cutSC:4200, cutST:6700, cutEWS:7500, type:'NIT'},
+      {name:'MNNIT Allahabad - Electronics & Comm.',   loc:'Prayagraj, UP',     cutGen:11000,cutOBC:5500, cutSC:8800, cutST:14000,cutEWS:15500,type:'NIT'},
+      {name:'MNIT Jaipur - Computer Science',          loc:'Jaipur, RJ',        cutGen:8500, cutOBC:4300, cutSC:6800, cutST:10800,cutEWS:12000,type:'NIT'},
+      {name:'MNIT Jaipur - Electronics & Comm.',       loc:'Jaipur, RJ',        cutGen:17000,cutOBC:8600, cutSC:14400,cutST:22500,cutEWS:26800,type:'NIT'},
+      {name:'VNIT Nagpur - Computer Science',          loc:'Nagpur, MH',        cutGen:10500,cutOBC:5300, cutSC:8400, cutST:13500,cutEWS:14800,type:'NIT'},
+      {name:'MANIT Bhopal - Computer Science',         loc:'Bhopal, MP',        cutGen:15000,cutOBC:7600, cutSC:12000,cutST:19000,cutEWS:21000,type:'NIT'},
+      {name:'NIT Kurukshetra - Computer Science',      loc:'Kurukshetra, HR',   cutGen:14000,cutOBC:7100, cutSC:11200,cutST:17900,cutEWS:19700,type:'NIT'},
+      {name:'NIT Durgapur - Computer Science',         loc:'Durgapur, WB',      cutGen:7361, cutOBC:3700, cutSC:5900, cutST:9400, cutEWS:10400,type:'NIT'},
+      {name:'NIT Durgapur - Electronics & Comm.',      loc:'Durgapur, WB',      cutGen:11537,cutOBC:5800, cutSC:9300, cutST:14500,cutEWS:17200,type:'NIT'},
+      {name:'NIT Delhi - Computer Science',            loc:'New Delhi',         cutGen:8902, cutOBC:4500, cutSC:7100, cutST:11400,cutEWS:12600,type:'NIT'},
+      {name:'NIT Delhi - Electronics & Comm.',         loc:'New Delhi',         cutGen:15292,cutOBC:7700, cutSC:12200,cutST:19500,cutEWS:21500,type:'NIT'},
+      {name:'NIT Jamshedpur - Computer Science',       loc:'Jamshedpur, JH',    cutGen:11978,cutOBC:6000, cutSC:9600, cutST:15300,cutEWS:16800,type:'NIT'},
+      {name:'NIT Jamshedpur - Electronics & Comm.',    loc:'Jamshedpur, JH',    cutGen:15292,cutOBC:7700, cutSC:12200,cutST:19500,cutEWS:21500,type:'NIT'},
+      {name:'NIT Jamshedpur - Mechanical Engineering', loc:'Jamshedpur, JH',    cutGen:30000,cutOBC:15200,cutSC:25400,cutST:39600,cutEWS:47300,type:'NIT'},
+      {name:'NIT Jalandhar - Computer Science',        loc:'Jalandhar, PB',     cutGen:18000,cutOBC:9100, cutSC:14400,cutST:23000,cutEWS:25300,type:'NIT'},
+      {name:'NIT Patna - Computer Science',            loc:'Patna, BR',         cutGen:18500,cutOBC:9300, cutSC:14800,cutST:23600,cutEWS:26000,type:'NIT'},
+      {name:'NIT Silchar - Computer Science',          loc:'Silchar, AS',       cutGen:21000,cutOBC:10600,cutSC:16800,cutST:26900,cutEWS:29600,type:'NIT'},
+      {name:'NIT Raipur - Computer Science',           loc:'Raipur, CG',        cutGen:24000,cutOBC:12100,cutSC:19200,cutST:30700,cutEWS:33800,type:'NIT'},
+      {name:'NIT Goa - Computer Science',              loc:'Ponda, GA',         cutGen:27000,cutOBC:13600,cutSC:21600,cutST:34600,cutEWS:38000,type:'NIT'},
+      {name:'NIT Andhra Pradesh - Computer Science',   loc:'Tadepalligudem, AP',cutGen:34000,cutOBC:17100,cutSC:27200,cutST:43600,cutEWS:47900,type:'NIT'},
+      {name:'NIT Uttarakhand - Computer Science',      loc:'Srinagar Garhwal',  cutGen:31000,cutOBC:15600,cutSC:24800,cutST:39700,cutEWS:43600,type:'NIT'},
+      {name:'NIT Srinagar - Computer Science',         loc:'Srinagar, JK',      cutGen:220991,cutOBC:110000,cutSC:180000,cutST:280000,cutEWS:300000,type:'NIT'}
+    ],
+    iiit:[
+      {name:'IIIT Hyderabad - Computer Science',       loc:'Hyderabad, TS',     cutGen:3200, cutOBC:1600, cutSC:6500, cutST:9500, cutEWS:4800, type:'IIIT'},
+      {name:'IIIT Delhi - Computer Science',           loc:'New Delhi',         cutGen:4100, cutOBC:2100, cutSC:8000, cutST:12000,cutEWS:6000, type:'IIIT'},
+      {name:'IIIT Allahabad - Information Technology', loc:'Prayagraj, UP',     cutGen:9500, cutOBC:5200, cutSC:17500,cutST:26000,cutEWS:12500,type:'IIIT'},
+      {name:'IIIT Allahabad - Electronics & Comm.',    loc:'Prayagraj, UP',     cutGen:14500,cutOBC:8000, cutSC:25000,cutST:38000,cutEWS:18500,type:'IIIT'},
+      {name:'IIIT Gwalior - Information Technology',   loc:'Gwalior, MP',       cutGen:12000,cutOBC:6600, cutSC:21000,cutST:31000,cutEWS:15500,type:'IIIT'},
+      {name:'IIIT Lucknow - Computer Science',         loc:'Lucknow, UP',       cutGen:24000,cutOBC:13500,cutSC:40000,cutST:59000,cutEWS:30000,type:'IIIT'},
+      {name:'IIIT Kota - Computer Science',            loc:'Kota, RJ',          cutGen:22000,cutOBC:12500,cutSC:37000,cutST:55000,cutEWS:28000,type:'IIIT'},
+      {name:'IIIT Nagpur - Computer Science',          loc:'Nagpur, MH',        cutGen:28000,cutOBC:16000,cutSC:46000,cutST:68000,cutEWS:35000,type:'IIIT'},
+      {name:'IIIT Pune - Computer Science',            loc:'Pune, MH',          cutGen:30000,cutOBC:17500,cutSC:49000,cutST:72000,cutEWS:38000,type:'IIIT'},
+      {name:'IIIT Vadodara - Computer Science',        loc:'Vadodara, GJ',      cutGen:32000,cutOBC:18500,cutSC:52000,cutST:77000,cutEWS:40000,type:'IIIT'}
+    ],
+    gfti:[
+      {name:'DTU Delhi - Computer Science',            loc:'New Delhi',         cutGen:5000, cutOBC:2700, cutSC:9500, cutST:14500,cutEWS:7000, type:'GFTI/State'},
+      {name:'DTU Delhi - Electronics & Comm.',         loc:'New Delhi',         cutGen:7500, cutOBC:4200, cutSC:14000,cutST:21000,cutEWS:10500,type:'GFTI/State'},
+      {name:'NSUT Delhi - Computer Science',           loc:'New Delhi',         cutGen:6500, cutOBC:3600, cutSC:12000,cutST:18000,cutEWS:9000, type:'GFTI/State'},
+      {name:'PEC Chandigarh - Computer Science',       loc:'Chandigarh',        cutGen:10500,cutOBC:5800, cutSC:19000,cutST:28000,cutEWS:13500,type:'GFTI'},
+      {name:'IIEST Shibpur - Computer Science',        loc:'Shibpur, WB',       cutGen:11000,cutOBC:6100, cutSC:20000,cutST:30000,cutEWS:14000,type:'GFTI'}
+    ],
+    private:[
+      {name:'BITS Pilani - Computer Science',          loc:'Pilani, RJ',        cutGen:98.0,cutOBC:95.5,cutSC:91.0,cutST:86.0,cutEWS:97.0,type:'Private (BITSAT)'},
+      {name:'BITS Goa - Computer Science',             loc:'Goa',               cutGen:96.5,cutOBC:93.5,cutSC:89.0,cutST:84.0,cutEWS:95.5,type:'Private (BITSAT)'},
+      {name:'BITS Hyderabad - Computer Science',       loc:'Hyderabad, TS',     cutGen:95.0,cutOBC:92.0,cutSC:87.5,cutST:82.5,cutEWS:94.0,type:'Private (BITSAT)'},
+      {name:'BITS Pilani - Electronics & Comm.',       loc:'Pilani, RJ',        cutGen:97.5,cutOBC:94.5,cutSC:90.5,cutST:85.5,cutEWS:96.5,type:'Private (BITSAT)'},
+      {name:'VIT Vellore - Computer Science',          loc:'Vellore, TN',       cutGen:85.0,cutOBC:80.0,cutSC:75.0,cutST:70.0,cutEWS:83.0,type:'Private (VITEEE)'},
+      {name:'Thapar Institute - Computer Science',     loc:'Patiala, PB',       cutGen:88.0,cutOBC:83.0,cutSC:78.0,cutST:73.0,cutEWS:86.0,type:'Private (JEE Main)'},
+      {name:'Manipal Institute - Computer Science',    loc:'Manipal, KA',       cutGen:82.0,cutOBC:77.0,cutSC:72.0,cutST:67.0,cutEWS:80.0,type:'Private (MET)'},
+      {name:'SRM Vellore - Computer Science',          loc:'Chennai, TN',       cutGen:75.0,cutOBC:70.0,cutSC:65.0,cutST:60.0,cutEWS:73.0,type:'Private (SRMJEEE)'},
+      {name:'Chandigarh University - Computer Science',loc:'Chandigarh, PB',    cutGen:70.0,cutOBC:65.0,cutSC:60.0,cutST:55.0,cutEWS:68.0,type:'Private'},
+      {name:'Amity University - Computer Science',     loc:'Noida, UP',         cutGen:65.0,cutOBC:60.0,cutSC:55.0,cutST:50.0,cutEWS:63.0,type:'Private (AUAT)'}
+    ]
+  },
+  medical:[
+    // MCC NEET 2025 AIQ Closing Ranks (All India Quota, Last Round) — verified approximate
+    {name:'AIIMS New Delhi',                           loc:'New Delhi',         cutGen:48,    cutOBC:207,   cutSC:644,  cutST:1405, cutEWS:254,   type:'AIIMS'},
+    {name:'AIIMS Jodhpur',                             loc:'Jodhpur, RJ',       cutGen:350,   cutOBC:900,   cutSC:3200, cutST:7000, cutEWS:1100,  type:'AIIMS'},
+    {name:'AIIMS Bhopal',                              loc:'Bhopal, MP',        cutGen:400,   cutOBC:1050,  cutSC:3800, cutST:8200, cutEWS:1300,  type:'AIIMS'},
+    {name:'AIIMS Rishikesh',                           loc:'Rishikesh, UK',     cutGen:816,   cutOBC:2100,  cutSC:5500, cutST:12000,cutEWS:2400,  type:'AIIMS'},
+    {name:'AIIMS Bhubaneswar',                         loc:'Bhubaneswar, OD',   cutGen:500,   cutOBC:1300,  cutSC:4500, cutST:9500, cutEWS:1600,  type:'AIIMS'},
+    {name:'AIIMS Patna',                               loc:'Patna, BR',         cutGen:700,   cutOBC:1800,  cutSC:5800, cutST:12500,cutEWS:2100,  type:'AIIMS'},
+    {name:'AIIMS Raipur',                              loc:'Raipur, CG',        cutGen:800,   cutOBC:2000,  cutSC:6200, cutST:13500,cutEWS:2400,  type:'AIIMS'},
+    {name:'AIIMS Nagpur',                              loc:'Nagpur, MH',        cutGen:950,   cutOBC:2400,  cutSC:7000, cutST:15000,cutEWS:2900,  type:'AIIMS'},
+    {name:'AIIMS Gorakhpur',                           loc:'Gorakhpur, UP',     cutGen:1200,  cutOBC:3000,  cutSC:9000, cutST:19000,cutEWS:3600,  type:'AIIMS'},
+    {name:'AIIMS Kalyani',                             loc:'Kalyani, WB',       cutGen:1500,  cutOBC:3800,  cutSC:11000,cutST:24000,cutEWS:4500,  type:'AIIMS'},
+    {name:'AIIMS Mangalagiri',                         loc:'Mangalagiri, AP',   cutGen:1800,  cutOBC:4500,  cutSC:13000,cutST:28000,cutEWS:5400,  type:'AIIMS'},
+    {name:'AIIMS Bibinagar',                           loc:'Bibinagar, TS',     cutGen:2200,  cutOBC:5500,  cutSC:16000,cutST:34000,cutEWS:6600,  type:'AIIMS'},
+    {name:'AIIMS Madurai',                             loc:'Madurai, TN',       cutGen:3597,  cutOBC:8900,  cutSC:25000,cutST:53000,cutEWS:10800, type:'AIIMS'},
+    {name:'Maulana Azad Medical collage',              loc:'New Delhi',         cutGen:103,   cutOBC:381,   cutSC:5218, cutST:5543, cutEWS:789,   type:'Govt'},
+    {name:'VMMC & Safdarjung Hospital',                loc:'New Delhi',         cutGen:180,   cutOBC:650,   cutSC:7500, cutST:8000, cutEWS:1400,  type:'Govt'},
+    {name:'Lady Hardinge Medical collage',             loc:'New Delhi',         cutGen:280,   cutOBC:900,   cutSC:9000, cutST:9500, cutEWS:2000,  type:'Govt'},
+    {name:'JIPMER Puducherry',                         loc:'Puducherry',        cutGen:250,   cutOBC:800,   cutSC:3000, cutST:6500, cutEWS:900,   type:'Govt (JIPMER)'},
+    {name:'Seth GS Medical collage Mumbai',            loc:'Mumbai, MH',        cutGen:900,   cutOBC:3000,  cutSC:14000,cutST:16000,cutEWS:3800,  type:'Govt'},
+    {name:'Grant Medical collage Mumbai',              loc:'Mumbai, MH',        cutGen:1200,  cutOBC:4000,  cutSC:18000,cutST:20000,cutEWS:5000,  type:'Govt'},
+    {name:'GMCH Chandigarh',                           loc:'Chandigarh',        cutGen:1500,  cutOBC:4500,  cutSC:18000,cutST:21000,cutEWS:5500,  type:'Govt'},
+    {name:'BHU Institute of Medical Sciences',         loc:'Varanasi, UP',      cutGen:2000,  cutOBC:6000,  cutSC:24000,cutST:28000,cutEWS:7500,  type:'Govt'},
+    {name:'SMS Medical collage Jaipur',                loc:'Jaipur, RJ',        cutGen:3500,  cutOBC:9500,  cutSC:34000,cutST:39000,cutEWS:11000, type:'Govt'},
+    {name:"King George's Medical University",          loc:'Lucknow, UP',       cutGen:2500,  cutOBC:7500,  cutSC:28000,cutST:32000,cutEWS:9000,  type:'Govt'},
+    {name:'Madras Medical collage',                    loc:'Chennai, TN',       cutGen:1800,  cutOBC:5500,  cutSC:22000,cutST:25000,cutEWS:7000,  type:'Govt'},
+    {name:'Osmania Medical collage',                   loc:'Hyderabad, TS',     cutGen:4000,  cutOBC:11000, cutSC:38000,cutST:44000,cutEWS:13000, type:'Govt'},
+    {name:'Bangalore Medical collage',                 loc:'Bengaluru, KA',     cutGen:4500,  cutOBC:12500, cutSC:42000,cutST:49000,cutEWS:15000, type:'Govt'},
+    {name:'Christian Medical collage',                 loc:'Vellore, TN',       cutGen:800,   cutOBC:2500,  cutSC:10000,cutST:12000,cutEWS:3000,  type:'Private'},
+    {name:'Kasturba Medical collage Manipal',          loc:'Manipal, KA',       cutGen:8000,  cutOBC:22000, cutSC:70000,cutST:80000,cutEWS:26000, type:'Private'},
+    {name:"St. John's Medical collage",                loc:'Bengaluru, KA',     cutGen:6000,  cutOBC:17000, cutSC:55000,cutST:64000,cutEWS:20000, type:'Private'},
+    {name:'Amrita Institute of Medical Sciences',      loc:'Kochi, KL',         cutGen:10000, cutOBC:28000, cutSC:88000,cutST:100000,cutEWS:33000,type:'Private'},
+    {name:'JSS Medical collage',                       loc:'Mysuru, KA',        cutGen:15000, cutOBC:40000, cutSC:120000,cutST:138000,cutEWS:48000,type:'Private'},
+    {name:'Sri Ramachandra Institute',                 loc:'Chennai, TN',       cutGen:12000, cutOBC:33000, cutSC:100000,cutST:115000,cutEWS:39000,type:'Private'},
+    {name:'D.Y. Patil Medical collage Pune',           loc:'Pune, MH',          cutGen:30000, cutOBC:75000, cutSC:200000,cutST:230000,cutEWS:90000,type:'Private'},
+    {name:'KIMS Hyderabad',                            loc:'Hyderabad, TS',     cutGen:35000, cutOBC:88000, cutSC:230000,cutST:265000,cutEWS:105000,type:'Private'},
+    {name:'Saveetha Medical collage',                  loc:'Chennai, TN',       cutGen:50000, cutOBC:120000,cutSC:300000,cutST:345000,cutEWS:145000,type:'Private'},
+    {name:'Meenakshi Medical collage',                 loc:'Kancheepuram, TN',  cutGen:60000, cutOBC:145000,cutSC:350000,cutST:400000,cutEWS:175000,type:'Private'}
+  ]
+};
+
+function setFilter(btn,val){
+  activeFilter=val;
+  document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderResults();
+}
+
+function predict(){
+  var cat=document.getElementById('resCat').value;
+  var userState=document.getElementById('homeSt').value;
+  var results=[];
+
+  if(currentType==='engg'){
+    var jeePctEl=document.getElementById('jeeMainPct');
+    var jeeRankEl=document.getElementById('jeeMainRank');
+    var jeeAdvEl=document.getElementById('jeeAdvRank');
+    var jeePct=jeePctEl?parseFloat(jeePctEl.value):85;
+    var jeeRank=jeeRankEl&&jeeRankEl.value?parseInt(jeeRankEl.value):null;
+    var jeeAdv=jeeAdvEl&&jeeAdvEl.value?parseInt(jeeAdvEl.value):null;
+
+    if(jeeAdv){
+      for(var i=0;i<data.engg.iit.length;i++){
+        var c=data.engg.iit[i];
+        var cutoff=getCut(c,cat,userState);
+        var chance=getChance(jeeAdv,cutoff,'lower');
+        results.push({name:c.name,loc:c.loc,type:c.type,chance:chance,isHS:false,
+          displayScore:'Adv. Rank: '+jeeAdv.toLocaleString(),
+          cutoffDisplay:'Closing Rank: '+cutoff.toLocaleString()});
+      }
+    }
+    if(jeeRank){
+      var nitArr=data.engg.nit.concat(data.engg.iiit).concat(data.engg.gfti);
+      for(var i=0;i<nitArr.length;i++){
+        var c=nitArr[i];
+        var hs=checkHS(c.name,userState);
+        var cutoff=getCut(c,cat,userState);
+        var chance=getChance(jeeRank,cutoff,'lower');
+        results.push({name:c.name,loc:c.loc,type:c.type,chance:chance,isHS:hs,
+          displayScore:'Main Rank: '+jeeRank.toLocaleString(),
+          cutoffDisplay:'Closing Rank: '+cutoff.toLocaleString()+(hs?' (HS)':'')});
+      }
+    }
+    for(var i=0;i<data.engg.private.length;i++){
+      var c=data.engg.private[i];
+      var cutoff=getCut(c,cat,userState);
+      var chance=getChance(jeePct,cutoff,'higher');
+      results.push({name:c.name,loc:c.loc,type:c.type,chance:chance,isHS:false,
+        displayScore:'Percentile: '+jeePct.toFixed(1),
+        cutoffDisplay:'Min Pct: '+cutoff});
+    }
+
+  } else {
+    var neetRankEl=document.getElementById('neetRank');
+    var neetRank=neetRankEl&&neetRankEl.value?parseInt(neetRankEl.value):null;
+    if(!neetRank){alert('Please enter your NEET All India Rank.');return;}
+    for(var i=0;i<data.medical.length;i++){
+      var c=data.medical[i];
+      var cutoff=getCut(c,cat,userState);
+      var chance=getChance(neetRank,cutoff,'lower');
+      results.push({name:c.name,loc:c.loc,type:c.type,chance:chance,isHS:false,
+        displayScore:'NEET Rank: '+neetRank.toLocaleString(),
+        cutoffDisplay:'Closing Rank: '+cutoff.toLocaleString()});
+    }
+  }
+
+  if(!results.length){alert('Please enter at least one score or rank.');return;}
+  var order={safe:0,good:1,moderate:2,tough:3,reach:4};
+  results.sort(function(a,b){return order[a.chance.cls]-order[b.chance.cls];});
+  allResults=results;
+  activeFilter='all';
+  renderResults();
+  setTimeout(function(){document.getElementById('rightPanel').scrollTop=0;},50);
+}
+
+function renderResults(){
+  document.getElementById('emptyState').style.display='none';
+  var area=document.getElementById('resultArea');
+  area.style.display='block';
+
+  var counts={safe:0,good:0,moderate:0,tough:0,reach:0};
+  for(var i=0;i<allResults.length;i++)counts[allResults[i].chance.cls]++;
+
+  var filtered=[];
+  if(activeFilter==='all'){filtered=allResults;}
+  else if(activeFilter==='reach'){
+    for(var i=0;i<allResults.length;i++){if(allResults[i].chance.cls==='reach'||allResults[i].chance.cls==='tough')filtered.push(allResults[i]);}
+  } else {
+    for(var i=0;i<allResults.length;i++){if(allResults[i].chance.cls===activeFilter)filtered.push(allResults[i]);}
+  }
+
+  var groups={safe:[],good:[],moderate:[],tough:[],reach:[]};
+  for(var i=0;i<filtered.length;i++)groups[filtered[i].chance.cls].push(filtered[i]);
+
+  var clrMap={safe:'var(--green)',good:'var(--primary)',moderate:'var(--gold)',tough:'var(--orange)',reach:'var(--red)'};
+  var sections=[
+    {key:'safe',    label:'Safe collages',  color:'var(--green)',   bg:'rgba(16,185,129,0.12)', desc:'Well above cutoff — high admission probability'},
+    {key:'good',    label:'Good Chances',   color:'var(--primary)', bg:'rgba(79,142,247,0.12)', desc:'Slightly above cutoff — strong probability'},
+    {key:'moderate',label:'Border Cases',   color:'var(--gold)',    bg:'rgba(245,158,11,0.12)', desc:'At the cutoff — apply with a solid backup plan'},
+    {key:'tough',   label:'Tough Reach',    color:'var(--orange)',  bg:'rgba(249,115,22,0.12)', desc:'Slightly below cutoff — possible but risky'},
+    {key:'reach',   label:'Dream collages', color:'var(--red)',     bg:'rgba(239,68,68,0.12)',  desc:'Significantly below cutoff'}
+  ];
+
+  var catEl=document.getElementById('resCat');
+  var catText=catEl.options[catEl.selectedIndex].text;
+
+  var html='<div class="res-header">' +
+    '<div class="res-title">Your collage Predictions</div>' +
+    '<div class="res-sub">'+allResults.length+' collages analysed &middot; '+catText+' category &middot; showing '+filtered.length+'</div>' +
+  '</div>' +
+  '<div class="filter-bar">' +
+    '<span>Filter:</span>' +
+    '<button class="fbtn'+(activeFilter==='all'?' on':'')+'" onclick="setFilter(this,\'all\')">All ('+allResults.length+')</button>' +
+    '<button class="fbtn" onclick="setFilter(this,\'safe\')" style="'+(activeFilter==='safe'?'background:rgba(16,185,129,0.15);border-color:var(--green);color:var(--green)':'')+'">'+'&#9989;'+' Safe ('+counts.safe+')</button>' +
+    '<button class="fbtn" onclick="setFilter(this,\'good\')" style="'+(activeFilter==='good'?'background:rgba(79,142,247,0.15);border-color:var(--primary);color:var(--primary)':'')+'">'+'&#128994;'+' Good ('+counts.good+')</button>' +
+    '<button class="fbtn" onclick="setFilter(this,\'moderate\')" style="'+(activeFilter==='moderate'?'background:rgba(245,158,11,0.15);border-color:var(--gold);color:var(--gold)':'')+'">'+'&#128993;'+' Border ('+counts.moderate+')</button>' +
+    '<button class="fbtn" onclick="setFilter(this,\'reach\')" style="'+(activeFilter==='reach'?'background:rgba(239,68,68,0.15);border-color:var(--red);color:var(--red)':'')+'">'+'&#128308;'+' Reach ('+(counts.tough+counts.reach)+')</button>' +
+  '</div>' +
+  '<div class="summary">' +
+    '<div class="scard"><div class="snum" style="color:var(--green)">'+counts.safe+'</div><div class="slabel">Safe</div></div>' +
+    '<div class="scard"><div class="snum" style="color:var(--primary)">'+counts.good+'</div><div class="slabel">Good</div></div>' +
+    '<div class="scard"><div class="snum" style="color:var(--gold)">'+counts.moderate+'</div><div class="slabel">Border</div></div>' +
+    '<div class="scard"><div class="snum" style="color:var(--red)">'+(counts.tough+counts.reach)+'</div><div class="slabel">Reach</div></div>' +
+  '</div>' +
+  '<div class="legend">' +
+    '<div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Safe</div>' +
+    '<div class="leg-item"><div class="leg-dot" style="background:var(--primary)"></div>Good</div>' +
+    '<div class="leg-item"><div class="leg-dot" style="background:var(--gold)"></div>Moderate</div>' +
+    '<div class="leg-item"><div class="leg-dot" style="background:var(--orange)"></div>Tough</div>' +
+    '<div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Reach</div>' +
+  '</div>';
+
+  if(!filtered.length){
+    html+='<div class="no-results"><h3>No collages match this filter</h3></div>';
+  } else {
+    for(var s=0;s<sections.length;s++){
+      var sec=sections[s];
+      var list=groups[sec.key];
+      if(!list.length)continue;
+      html+='<div class="result-section">' +
+        '<div class="sec-head">' +
+          '<div class="sec-dot" style="background:'+sec.color+'"></div>' +
+          '<div class="sec-name">'+sec.label+'</div>' +
+          '<div class="sec-desc">'+sec.desc+'</div>' +
+          '<div class="sec-count" style="background:'+sec.bg+';color:'+sec.color+'">'+list.length+'</div>' +
+        '</div>';
+      for(var j=0;j<list.length;j++){
+        var c=list[j];
+        var prog=Math.max(3,Math.min(97,c.chance.pct));
+        var clr=clrMap[c.chance.cls];
+        html+='<div class="rcard" style="animation-delay:'+(j*28)+'ms">' +
+          '<div class="chance-badge c-'+c.chance.cls+'">' +
+            '<span class="cbicon">'+c.chance.icon+'</span>' +
+            '<span>'+c.chance.label+'</span>' +
+          '</div>' +
+          '<div class="rinfo">' +
+            '<div class="rname" title="'+c.name+'">'+c.name+'</div>' +
+            '<div class="rmeta">&#128205; '+c.loc+' &nbsp;&middot;&nbsp; '+c.displayScore+'</div>' +
+            '<div class="prog-wrap">' +
+              '<div class="prog-bar"><div class="prog-fill" style="width:'+prog+'%;background:'+clr+'"></div></div>' +
+              '<div class="prog-pct" style="color:'+clr+'">'+prog+'%</div>' +
+            '</div>' +
+            '<div class="rtags">' +
+              '<span class="rtag t-'+c.chance.cls+'">'+c.chance.label+'</span>' +
+              '<span class="rtag t-type">'+c.type+'</span>' +
+              (c.isHS?'<span class="rtag t-hs">&#127968; Home State</span>':'') +
+            '</div>' +
+          '</div>' +
+          '<div class="rright">' +
+            '<div class="rcut-label">Cutoff</div>' +
+            '<div class="rcut-val" style="color:'+clr+'">'+c.cutoffDisplay.split(': ')[1]+'</div>' +
+          '</div>' +
+        '</div>';
+      }
+      html+='</div>';
+    }
+  }
+
+  html+='<div class="info-note">' +
+    '&#9888;&#65039; <strong>Important:</strong> Based on approximate JoSAA 2025 &amp; MCC 2025 closing rank data. Actual cutoffs change every year. Always verify on official portals before applying.' +
+    '<div class="portal-links">' +
+      '<a class="portal-link" href="https://josaa.nic.in" target="_blank">josaa.nic.in</a>' +
+      '<a class="portal-link" href="https://mcc.nic.in" target="_blank">mcc.nic.in</a>' +
+      '<a class="portal-link" href="https://csab.nic.in" target="_blank">csab.nic.in</a>' +
+    '</div>' +
+  '</div>';
+
+  area.innerHTML=html;
+}
+</script>
+</body>
+</html>

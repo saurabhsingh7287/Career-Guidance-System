@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Career.learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #f0f4ff; --bg1: #e4ebff; --glass: rgba(255,255,255,0.9);
+      --primary: #4f8ef7; --violet: #8b5cf6; --gold: #c2780a;
+      --text: #0f172a; --muted: #64748b; --border: rgba(59,125,232,0.22);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh; display: flex; overflow: hidden;
+    }
+    canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+
+    /* LEFT PANEL */
+    .left-panel {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      padding: 80px; position: relative; z-index: 1;
+    }
+    .panel-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 60px;
+      color: var(--text); text-decoration: none;
+    }
+    .panel-logo span { color: var(--gold); }
+    .panel-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 4vw, 4.5rem);
+      line-height: 0.95; letter-spacing: 1px; margin-bottom: 20px;
+    }
+    .panel-headline .grad {
+      background: linear-gradient(90deg, var(--primary), var(--violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .panel-sub { color: var(--muted); font-size: 1rem; line-height: 1.7; max-width: 380px; margin-bottom: 40px; }
+    .feat-list { display: flex; flex-direction: column; gap: 14px; }
+    .feat-item {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--muted); font-size: 0.92rem; font-weight: 600;
+    }
+    .feat-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(79,142,247,0.2), rgba(139,92,246,0.2));
+      border: 1px solid rgba(79,142,247,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: var(--primary); flex-shrink: 0;
+    }
+
+    /* RIGHT PANEL */
+    .right-panel {
+      width: 480px; display: flex; align-items: center; justify-content: center;
+      padding: 40px; position: relative; z-index: 1;
+      border-left: 1px solid var(--border);
+      background: rgba(240,244,255,0.8); backdrop-filter: blur(20px);
+    }
+    .form-card {
+      width: 100%; max-width: 400px;
+      animation: slideIn 0.6s ease both;
+    }
+    @keyframes slideIn {
+      from { opacity:0; transform: translateX(20px); }
+      to { opacity:1; transform: translateX(0); }
+    }
+    .form-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 1px; margin-bottom: 6px; }
+    .form-subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 36px; }
+
+    .input-group { margin-bottom: 20px; }
+    .input-group label { display: block; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .input-wrap { position: relative; }
+    .input-wrap i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; transition: color .3s; pointer-events: none; }
+    .input-wrap input {
+      width: 100%; padding: 14px 16px 14px 44px;
+      background: rgba(0,0,0,0.05); border: 1px solid var(--border);
+      border-radius: 12px; font-size: 0.95rem; color: var(--text);
+      font-family: 'Nunito', sans-serif; transition: all .3s;
+    }
+    .input-wrap input::placeholder { color: rgba(107,122,157,0.6); }
+    .input-wrap input:focus { outline: none; border-color: var(--primary); background: rgba(79,142,247,0.05); box-shadow: 0 0 0 3px rgba(79,142,247,0.12); }
+    .input-wrap input:focus + i, .input-wrap:focus-within i { color: var(--primary); }
+
+    .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+    .remember { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--muted); cursor: pointer; }
+    .remember input[type=checkbox] { accent-color: var(--primary); width: 15px; height: 15px; }
+    .forgot { color: var(--primary); font-size: 0.88rem; font-weight: 700; text-decoration: none; }
+    .forgot:hover { text-decoration: underline; }
+
+    .btn-submit {
+      width: 100%; padding: 15px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--violet));
+      color: #fff; font-size: 1rem; font-weight: 800; cursor: pointer;
+      font-family: 'Nunito', sans-serif; letter-spacing: 0.5px;
+      box-shadow: 0 4px 24px rgba(79,142,247,0.4);
+      transition: all .3s; position: relative; overflow: hidden;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,142,247,0.55); }
+    .btn-submit:active { transform: scale(0.98); }
+
+    .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--border); }
+    .divider span { color: var(--muted); font-size: 0.8rem; }
+
+    .signup-prompt { text-align: center; font-size: 0.92rem; color: var(--muted); margin-top: 20px; }
+    .signup-prompt a { color: var(--gold); font-weight: 700; text-decoration: none; }
+    .signup-prompt a:hover { text-decoration: underline; }
+
+    .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+    .orb-1 { width: 400px; height: 400px; background: rgba(79,142,247,0.1); top: -80px; left: 200px; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(139,92,246,0.08); bottom: 50px; right: 400px; }
+
+    @media (max-width: 768px) {
+      .left-panel { display: none; }
+      .right-panel { width: 100%; border: none; }
+    }
+    .flash-msg { padding:10px 16px; border-radius:8px; font-size:0.88rem; font-weight:700; margin-bottom:16px; }
+  .flash-msg.error { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); color:#f87171; }
+  .flash-msg.success { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); color:#34d399; }
+</style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="left-panel">
+    <a class="panel-logo" href="/">Career<span>.</span>learning</a>
+    <h1 class="panel-headline">WELCOME<br><span class="grad">BACK.</span></h1>
+    <p class="panel-sub">Log in to access your personalized career assessment and continue your journey.</p>
+    <div class="feat-list">
+      <div class="feat-item"><div class="feat-dot"><i class="fa fa-check"></i></div> AI-powered stream prediction</div>
+      <div class="feat-item"><div class="feat-dot"><i class="fa fa-check"></i></div> Personalized career roadmaps</div>
+      <div class="feat-item"><div class="feat-dot"><i class="fa fa-check"></i></div> Curated study resources</div>
+      <div class="feat-item"><div class="feat-dot"><i class="fa fa-check"></i></div> 100% free to use</div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="form-card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash-msg {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      <a href="/" style="display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:0.85rem;font-weight:700;text-decoration:none;margin-bottom:28px;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--muted)'">
+        ← Back to Home
+      </a>
+
+      
+      <h2 class="form-title">SIGN IN</h2>
+      <p class="form-subtitle">Enter your credentials to continue</p>
+
+      <form action="/login" method="POST">
+        <div class="input-group">
+          <label>Username</label>
+          <div class="input-wrap">
+            <input type="text" name="username" placeholder="Enter your username" required>
+            <i class="fa-regular fa-user"></i>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" name="password" placeholder="••••••••" required>
+            <i class="fa-solid fa-lock"></i>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="remember"><input type="checkbox" name="remember"> Remember me</label>
+          <a href="#" class="forgot">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-submit">Log In →</button>
+      </form>
+
+      <div class="divider"><span>New here?</span></div>
+      <div class="signup-prompt">Don't have an account? <a href="/register">Create one free</a></div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('stars'), ctx = canvas.getContext('2d');
+    function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    const stars = Array.from({length:150}, () => ({
+      x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+      r: Math.random()*1.2, a: Math.random(), s: 0.0003+Math.random()*0.0005
+    }));
+    (function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      stars.forEach(s => {
+        s.a += s.s; if(s.a>1)s.a=0;
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(80,120,210,${s.a * 0.5})`; ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    })();
+  </script>
+</body>
+</html>
