@@ -1,7 +1,7 @@
 """
 chatbot.py — AI Chatbot (Groq API - Llama 3.3)
 """
-
+import os
 import requests as req
 from flask import Blueprint, render_template, request, jsonify
 from decorators import login_required
