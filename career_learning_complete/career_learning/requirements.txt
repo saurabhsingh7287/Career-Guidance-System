@@ -4,3 +4,4 @@ scikit-learn==1.6.1
 numpy==2.2.4
 anthropic==0.50.0
 gunicorn==23.0.0
+requests==2.32.3
