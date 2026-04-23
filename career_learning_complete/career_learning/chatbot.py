@@ -9,7 +9,7 @@ from decorators import login_required
 chatbot = Blueprint('chatbot', __name__)
 
 # ── Groq API Key ────────────────────────────────────────────────────────────
-GROQ_API_KEY = ""  # ← Sirf yahan apni key paste karo
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 CAREER_SYSTEM_PROMPT = """You are CareerBot, an AI career guidance assistant for Career.learning —
 a platform helping Indian students (Class 10 & 12) choose the right stream and career.
