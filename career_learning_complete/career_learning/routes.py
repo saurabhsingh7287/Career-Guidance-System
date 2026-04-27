@@ -83,10 +83,10 @@ def resource():
     return render_template('resource.html')
 
 
-@main.route('/collage')
+@main.route('/college')
 @login_required
-def collage():
-    return render_template('collage.html')
+def college():
+    return render_template('college.html')
 
 
 @main.route('/exam-tracker')

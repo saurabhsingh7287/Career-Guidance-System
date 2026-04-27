@@ -138,7 +138,7 @@
   <a class="logo" href="/">Career<span>.</span>learning</a>
   <ul class="nav-links">
     <li><a href="/dashboard">Home</a></li>
-    <li><a href="/collage">collages</a></li>
+    <li><a href="/college">colleges</a></li>
     <li><a href="/exam-tracker">Exam Tracker</a></li>
     <li><a href="/cutoff" class="active">Cutoff Predictor</a></li>
     <li><a href="/chatbot">CareerBot</a></li>
@@ -148,7 +148,7 @@
 <div class="wrap">
   <div class="left">
     <div class="panel-title">Cutoff Predictor</div>
-    <p class="panel-sub">Enter your JEE or NEET rank and instantly see which collages you can get into — based on JoSAA 2025 and MCC 2025 data.</p>
+    <p class="panel-sub">Enter your JEE or NEET rank and instantly see which colleges you can get into — based on JoSAA 2025 and MCC 2025 data.</p>
 
     <div class="sec-lbl">Step 1 — Select Exam</div>
     <div class="exam-tabs" style="margin-bottom:22px">
@@ -186,7 +186,7 @@
       </select>
     </div>
 
-    <button class="btn-predict" onclick="predict()">&#128269; &nbsp;Predict My collages</button>
+    <button class="btn-predict" onclick="predict()">&#128269; &nbsp;Predict My colleges</button>
     <div class="disclaimer">&#9888;&#65039; <strong>Disclaimer:</strong> Based on JoSAA 2025 &amp; MCC 2025 approximate closing rank data. Actual cutoffs vary every year. Always verify on official portals before applying.</div>
   </div>
 
@@ -194,7 +194,7 @@
     <div class="empty" id="emptyState">
       <div class="empty-icon">&#127919;</div>
       <h2>Ready to Predict</h2>
-      <p>Enter your exam details on the left and click Predict — we'll show all collages ranked by your admission chances.</p>
+      <p>Enter your exam details on the left and click Predict — we'll show all colleges ranked by your admission chances.</p>
     </div>
     <div id="resultArea" style="display:none"></div>
   </div>
@@ -218,7 +218,7 @@ function buildEnggInputs(){
       '<div class="slider-top"><span class="slider-val" id="jeeMainPctVal">85.0</span><span class="slider-unit">Percentile</span></div>' +
       '<input type="range" id="jeeMainPct" min="40" max="100" step="0.1" value="85" oninput="document.getElementById(\'jeeMainPctVal\').textContent=parseFloat(this.value).toFixed(1)">' +
       '<div class="slider-minmax"><span>40</span><span>100</span></div>' +
-      '<div class="range-hint">Used for Private collages (BITS, VIT, Thapar etc.)</div>' +
+      '<div class="range-hint">Used for Private colleges (BITS, VIT, Thapar etc.)</div>' +
     '</div>' +
   '</div>' +
   '<div class="two-col">' +
@@ -422,29 +422,29 @@ var data={
     {name:'AIIMS Mangalagiri',                         loc:'Mangalagiri, AP',   cutGen:1800,  cutOBC:4500,  cutSC:13000,cutST:28000,cutEWS:5400,  type:'AIIMS'},
     {name:'AIIMS Bibinagar',                           loc:'Bibinagar, TS',     cutGen:2200,  cutOBC:5500,  cutSC:16000,cutST:34000,cutEWS:6600,  type:'AIIMS'},
     {name:'AIIMS Madurai',                             loc:'Madurai, TN',       cutGen:3597,  cutOBC:8900,  cutSC:25000,cutST:53000,cutEWS:10800, type:'AIIMS'},
-    {name:'Maulana Azad Medical collage',              loc:'New Delhi',         cutGen:103,   cutOBC:381,   cutSC:5218, cutST:5543, cutEWS:789,   type:'Govt'},
+    {name:'Maulana Azad Medical college',              loc:'New Delhi',         cutGen:103,   cutOBC:381,   cutSC:5218, cutST:5543, cutEWS:789,   type:'Govt'},
     {name:'VMMC & Safdarjung Hospital',                loc:'New Delhi',         cutGen:180,   cutOBC:650,   cutSC:7500, cutST:8000, cutEWS:1400,  type:'Govt'},
-    {name:'Lady Hardinge Medical collage',             loc:'New Delhi',         cutGen:280,   cutOBC:900,   cutSC:9000, cutST:9500, cutEWS:2000,  type:'Govt'},
+    {name:'Lady Hardinge Medical college',             loc:'New Delhi',         cutGen:280,   cutOBC:900,   cutSC:9000, cutST:9500, cutEWS:2000,  type:'Govt'},
     {name:'JIPMER Puducherry',                         loc:'Puducherry',        cutGen:250,   cutOBC:800,   cutSC:3000, cutST:6500, cutEWS:900,   type:'Govt (JIPMER)'},
-    {name:'Seth GS Medical collage Mumbai',            loc:'Mumbai, MH',        cutGen:900,   cutOBC:3000,  cutSC:14000,cutST:16000,cutEWS:3800,  type:'Govt'},
-    {name:'Grant Medical collage Mumbai',              loc:'Mumbai, MH',        cutGen:1200,  cutOBC:4000,  cutSC:18000,cutST:20000,cutEWS:5000,  type:'Govt'},
+    {name:'Seth GS Medical college Mumbai',            loc:'Mumbai, MH',        cutGen:900,   cutOBC:3000,  cutSC:14000,cutST:16000,cutEWS:3800,  type:'Govt'},
+    {name:'Grant Medical college Mumbai',              loc:'Mumbai, MH',        cutGen:1200,  cutOBC:4000,  cutSC:18000,cutST:20000,cutEWS:5000,  type:'Govt'},
     {name:'GMCH Chandigarh',                           loc:'Chandigarh',        cutGen:1500,  cutOBC:4500,  cutSC:18000,cutST:21000,cutEWS:5500,  type:'Govt'},
     {name:'BHU Institute of Medical Sciences',         loc:'Varanasi, UP',      cutGen:2000,  cutOBC:6000,  cutSC:24000,cutST:28000,cutEWS:7500,  type:'Govt'},
-    {name:'SMS Medical collage Jaipur',                loc:'Jaipur, RJ',        cutGen:3500,  cutOBC:9500,  cutSC:34000,cutST:39000,cutEWS:11000, type:'Govt'},
+    {name:'SMS Medical college Jaipur',                loc:'Jaipur, RJ',        cutGen:3500,  cutOBC:9500,  cutSC:34000,cutST:39000,cutEWS:11000, type:'Govt'},
     {name:"King George's Medical University",          loc:'Lucknow, UP',       cutGen:2500,  cutOBC:7500,  cutSC:28000,cutST:32000,cutEWS:9000,  type:'Govt'},
-    {name:'Madras Medical collage',                    loc:'Chennai, TN',       cutGen:1800,  cutOBC:5500,  cutSC:22000,cutST:25000,cutEWS:7000,  type:'Govt'},
-    {name:'Osmania Medical collage',                   loc:'Hyderabad, TS',     cutGen:4000,  cutOBC:11000, cutSC:38000,cutST:44000,cutEWS:13000, type:'Govt'},
-    {name:'Bangalore Medical collage',                 loc:'Bengaluru, KA',     cutGen:4500,  cutOBC:12500, cutSC:42000,cutST:49000,cutEWS:15000, type:'Govt'},
-    {name:'Christian Medical collage',                 loc:'Vellore, TN',       cutGen:800,   cutOBC:2500,  cutSC:10000,cutST:12000,cutEWS:3000,  type:'Private'},
-    {name:'Kasturba Medical collage Manipal',          loc:'Manipal, KA',       cutGen:8000,  cutOBC:22000, cutSC:70000,cutST:80000,cutEWS:26000, type:'Private'},
-    {name:"St. John's Medical collage",                loc:'Bengaluru, KA',     cutGen:6000,  cutOBC:17000, cutSC:55000,cutST:64000,cutEWS:20000, type:'Private'},
+    {name:'Madras Medical college',                    loc:'Chennai, TN',       cutGen:1800,  cutOBC:5500,  cutSC:22000,cutST:25000,cutEWS:7000,  type:'Govt'},
+    {name:'Osmania Medical college',                   loc:'Hyderabad, TS',     cutGen:4000,  cutOBC:11000, cutSC:38000,cutST:44000,cutEWS:13000, type:'Govt'},
+    {name:'Bangalore Medical college',                 loc:'Bengaluru, KA',     cutGen:4500,  cutOBC:12500, cutSC:42000,cutST:49000,cutEWS:15000, type:'Govt'},
+    {name:'Christian Medical college',                 loc:'Vellore, TN',       cutGen:800,   cutOBC:2500,  cutSC:10000,cutST:12000,cutEWS:3000,  type:'Private'},
+    {name:'Kasturba Medical college Manipal',          loc:'Manipal, KA',       cutGen:8000,  cutOBC:22000, cutSC:70000,cutST:80000,cutEWS:26000, type:'Private'},
+    {name:"St. John's Medical college",                loc:'Bengaluru, KA',     cutGen:6000,  cutOBC:17000, cutSC:55000,cutST:64000,cutEWS:20000, type:'Private'},
     {name:'Amrita Institute of Medical Sciences',      loc:'Kochi, KL',         cutGen:10000, cutOBC:28000, cutSC:88000,cutST:100000,cutEWS:33000,type:'Private'},
-    {name:'JSS Medical collage',                       loc:'Mysuru, KA',        cutGen:15000, cutOBC:40000, cutSC:120000,cutST:138000,cutEWS:48000,type:'Private'},
+    {name:'JSS Medical college',                       loc:'Mysuru, KA',        cutGen:15000, cutOBC:40000, cutSC:120000,cutST:138000,cutEWS:48000,type:'Private'},
     {name:'Sri Ramachandra Institute',                 loc:'Chennai, TN',       cutGen:12000, cutOBC:33000, cutSC:100000,cutST:115000,cutEWS:39000,type:'Private'},
-    {name:'D.Y. Patil Medical collage Pune',           loc:'Pune, MH',          cutGen:30000, cutOBC:75000, cutSC:200000,cutST:230000,cutEWS:90000,type:'Private'},
+    {name:'D.Y. Patil Medical college Pune',           loc:'Pune, MH',          cutGen:30000, cutOBC:75000, cutSC:200000,cutST:230000,cutEWS:90000,type:'Private'},
     {name:'KIMS Hyderabad',                            loc:'Hyderabad, TS',     cutGen:35000, cutOBC:88000, cutSC:230000,cutST:265000,cutEWS:105000,type:'Private'},
-    {name:'Saveetha Medical collage',                  loc:'Chennai, TN',       cutGen:50000, cutOBC:120000,cutSC:300000,cutST:345000,cutEWS:145000,type:'Private'},
-    {name:'Meenakshi Medical collage',                 loc:'Kancheepuram, TN',  cutGen:60000, cutOBC:145000,cutSC:350000,cutST:400000,cutEWS:175000,type:'Private'}
+    {name:'Saveetha Medical college',                  loc:'Chennai, TN',       cutGen:50000, cutOBC:120000,cutSC:300000,cutST:345000,cutEWS:145000,type:'Private'},
+    {name:'Meenakshi Medical college',                 loc:'Kancheepuram, TN',  cutGen:60000, cutOBC:145000,cutSC:350000,cutST:400000,cutEWS:175000,type:'Private'}
   ]
 };
 
@@ -543,19 +543,19 @@ function renderResults(){
 
   var clrMap={safe:'var(--green)',good:'var(--primary)',moderate:'var(--gold)',tough:'var(--orange)',reach:'var(--red)'};
   var sections=[
-    {key:'safe',    label:'Safe collages',  color:'var(--green)',   bg:'rgba(16,185,129,0.12)', desc:'Well above cutoff — high admission probability'},
+    {key:'safe',    label:'Safe colleges',  color:'var(--green)',   bg:'rgba(16,185,129,0.12)', desc:'Well above cutoff — high admission probability'},
     {key:'good',    label:'Good Chances',   color:'var(--primary)', bg:'rgba(79,142,247,0.12)', desc:'Slightly above cutoff — strong probability'},
     {key:'moderate',label:'Border Cases',   color:'var(--gold)',    bg:'rgba(245,158,11,0.12)', desc:'At the cutoff — apply with a solid backup plan'},
     {key:'tough',   label:'Tough Reach',    color:'var(--orange)',  bg:'rgba(249,115,22,0.12)', desc:'Slightly below cutoff — possible but risky'},
-    {key:'reach',   label:'Dream collages', color:'var(--red)',     bg:'rgba(239,68,68,0.12)',  desc:'Significantly below cutoff'}
+    {key:'reach',   label:'Dream colleges', color:'var(--red)',     bg:'rgba(239,68,68,0.12)',  desc:'Significantly below cutoff'}
   ];
 
   var catEl=document.getElementById('resCat');
   var catText=catEl.options[catEl.selectedIndex].text;
 
   var html='<div class="res-header">' +
-    '<div class="res-title">Your collage Predictions</div>' +
-    '<div class="res-sub">'+allResults.length+' collages analysed &middot; '+catText+' category &middot; showing '+filtered.length+'</div>' +
+    '<div class="res-title">Your college Predictions</div>' +
+    '<div class="res-sub">'+allResults.length+' colleges analysed &middot; '+catText+' category &middot; showing '+filtered.length+'</div>' +
   '</div>' +
   '<div class="filter-bar">' +
     '<span>Filter:</span>' +
@@ -580,7 +580,7 @@ function renderResults(){
   '</div>';
 
   if(!filtered.length){
-    html+='<div class="no-results"><h3>No collages match this filter</h3></div>';
+    html+='<div class="no-results"><h3>No colleges match this filter</h3></div>';
   } else {
     for(var s=0;s<sections.length;s++){
       var sec=sections[s];

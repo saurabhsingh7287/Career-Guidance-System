@@ -190,7 +190,7 @@
     <a style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#0f172a;text-decoration:none;" href="/">Career<span style="color:#f59e0b">.</span>learning</a>
     <div style="display:flex;gap:20px;align-items:center;">
       <a style="color:#6b7a9d;text-decoration:none;font-size:0.85rem;font-weight:700;" href="/dashboard">Dashboard</a>
-      <a style="color:#6b7a9d;text-decoration:none;font-size:0.85rem;font-weight:700;" href="/collage"> collages</a>
+      <a style="color:#6b7a9d;text-decoration:none;font-size:0.85rem;font-weight:700;" href="/college"> colleges</a>
       <a style="color:#6b7a9d;text-decoration:none;font-size:0.85rem;font-weight:700;" href="/exam-tracker"> Exam Tracker</a>
       <a style="color:#6b7a9d;text-decoration:none;font-size:0.85rem;font-weight:700;" href="/cutoff"> Cutoff</a>
       <a style="color:#6b7a9d;text-decoration:none;font-size:0.85rem;font-weight:700;" href="/chatbot"> CareerBot</a>
@@ -452,7 +452,7 @@ const ENGINE = {
         label:'RECOMMENDED CAREER PATH',
         stream: avg>=75?'B.Tech — Top NIT / IIT':'B.Tech / B.E.',
         subtitle:'Engineer your future — code, create, innovate',
-        reason:`Your ${sNames[stream]} background and ${avg.toFixed(1)} average mark you as a strong engineering candidate. Quiz score: ${quiz}/5 shows good analytical ability. ${avg>=75?'Your marks put you in competitive territory for NITs and private top collages.':'Focused JEE preparation will unlock excellent engineering collages.'} CSE, IT, and Electronics are the hottest branches right now.`,
+        reason:`Your ${sNames[stream]} background and ${avg.toFixed(1)} average mark you as a strong engineering candidate. Quiz score: ${quiz}/5 shows good analytical ability. ${avg>=75?'Your marks put you in competitive territory for NITs and private top colleges.':'Focused JEE preparation will unlock excellent engineering colleges.'} CSE, IT, and Electronics are the hottest branches right now.`,
         strengths: this.strengths12({c1,c2,c3,quiz,stream,goal}),
         careers:['Software / Full-Stack Developer','Data Scientist / ML Engineer','Computer Hardware Engineer','Embedded Systems Engineer','Startup Founder / CTO'],
         exams:[{t:'JEE Main',c:'c-blue'},{t:'JEE Advanced',c:'c-violet'},{t:'BITSAT',c:'c-green'},{t:'VITEEE',c:'c-gold'},{t:'KCET / MHT-CET',c:'c-pink'}],
